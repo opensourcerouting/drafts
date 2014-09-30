@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<!-- Some of the more generally applicable PIs that most I-Ds might want to use -->
+<!-- Try to enforce the ID-nits conventions and DTD validity -->
+<?rfc strict="yes" ?>
+<!-- Items used when reviewing the document -->
+<?rfc comments="yes" ?>
+<!-- Controls display of <cref> elements -->
+<?rfc inline="no" ?>
+<!-- When no, put comments at end in comments section,
+                                 otherwise, put inline -->
+<?rfc editing="no" ?>
+<!-- When yes, insert editing marks: editing marks consist of a
+                                 string such as <29> printed in the blank line at the
+                                 beginning of each paragraph of text. -->
+<!-- Create Table of Contents (ToC) and set some options for it.
+         Note the ToC may be omitted for very short documents, but idnits insists on a ToC
+         if the document has more than 15 pages. -->
+<?rfc toc="yes"?>
+<?rfc tocompact="yes"?>
+<!-- If "yes" eliminates blank lines before main section entries. -->
+<?rfc tocdepth="4"?>
+<!-- Sets the number of levels of sections/sections... in ToC -->
+<!-- Choose the options for the references.
+         Some like symbolic tags in the references (and citations) and others prefer 
+         numbers. The RFC Editor always uses symbolic tags.
+         The tags used are the anchor attributes of the references. -->
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes" ?>
+<?rfc rfcprocack="yes" ?>
+<!-- If "yes", causes the references to be sorted in order of tags.
+                                 This doesn't have any effect unless symrefs is "yes" also. -->
+<!-- These two save paper: Just setting compact to "yes" makes savings by not starting each 
+         main section on a new page but does not omit the blank lines between list items. 
+         If subcompact is also "yes" the blank lines between list items are also omitted. -->
+<?rfc compact="yes" ?>
+<?rfc subcompact="no" ?>
+<!-- end of list of popular I-D processing instructions -->
+<!-- end of list of processing instructions -->
+<rfc category="std" docName="draft-zzzz-rtgwg-routing-extra-qualifiers-00"
+     ipr="trust200902">
+  <front>
+    <title abbrev="Extending IP route lookup">
+      Considerations and Registry for extending IP route lookup</title>
+
+    <author fullname="ZZZZ" initials="Z." surname="Z">
+      <organization>ZZZZ</organization>
+
+      <address>
+        <postal>
+          <street></street>
+          <city></city>
+          <code></code>
+          <region></region>
+          <country></country>
+        </postal>
+        <email></email>
+      </address>
+    </author>
+
+    <date year="2014" />
+    <area>Internet Engineering Task Force</area>
+    <workgroup>rtgwg</workgroup>
+
+    <abstract>
+      <t>This document describes the behaviour of a routing system that
+        takes additional specifications on routes--extra qualifiers--into
+        account, augmenting longest match behaviour.</t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+      <t>IP Routing systems at the time of creation of this document are
+        occasionally already capable of matching more than the packet's
+        destination addresses to lookup routes, preexisting patterns include
+        virtual routers (i.e. keying by routing instance), QoS-aware routing
+        (keying by DSCP bits) and the relatively unspecific "policy routing."
+      </t>
+      <t>Additional developments extend this field to the point where a lack
+        of well-defined specification may lead to interoperability problems.
+        The intent of this document is to construct a reference framework for
+        extensions on the match aspect of IP routes.</t>
+      <t>Specifically, since IP Routing includes longest-match route selection,
+        the ordering of all match qualifiers must be the same among all routers
+        to prevent loops or connectivity loss.</t>
+      <t>While this document is written with IPv6 in mind, it applies to IP
+        router architecture in general, including IPv4 routers.</t>
+
+      <section title="Requirements Language">
+        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+        "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+        document are to be interpreted as described in <xref
+        target="RFC2119"></xref>.</t>
+      </section>
+    </section>
+    <section title="Applicability">
+      <t>While the conceptually same longest-prefix routing is used not only
+        for routing packets, but also recursive route/nexthop lookups,
+        multicast reverse path forwarding and unicast reverse path filtering.
+        However, while based on the same base principle, these applications
+        may differ in their requirements.  For example, multicast RPF cannot
+        use source address discriminators since no source address is known at
+        the time of lookup.</t>
+      <t>The intent of this specification is only to provide a basic framework;
+        individual extensions to route match behaviour MUST clarify their
+        respective applicability.</t>
+    </section>
+    <section title="Match criteria">
+      <t>(This section is informational only.)</t>
+      <section title="Virtual routers">
+        <t>While not documented to this extent, an implementation capable of
+          partitioning a physical router into multiple virtual routers is an
+          application that essentially has the virtual router identifier as
+          first key in lookup operations.  This may not be implemented as such,
+          for example by keeping tables completely separate, however the end
+          behaviour is the same;  lookups are made local to the router
+          instance.
+        </t>
+      </section>
+      <section title="Policy routing">
+        <t>Equally little specified as virtual routers, policy routing usually
+          applies certain qualifiers (source address, traffic class, firewall
+          markers) prior to destination address match.
+        </t>
+      </section>
+      <section title="Destination address longest match">
+        <t>The conventional destination IP address longest match is included
+          at this point as it is, barring implementation specific extensions
+          mentioned above, the first qualifier used to match packets against
+          the route table.</t>
+      </section>
+      <section title="Source address longest match">
+        <t>Currently under development, matching on the source address permits
+          routers to choose the correct (in terms of <xref target="RFC2827" />)
+          exit in smaller multihomed networks.  This is distinct from policy
+          routing in that only few select (usually default) routes would be
+          annotated with source prefixes.</t>
+      </section>
+      <section title="Flowlabel routing">
+        <t>TBD</t>
+      </section>
+      <section title="QoS/DSCP traffic class based routing">
+        <t>TBD</t>
+      </section>
+
+    </section>
+
+    <section title="Requirements to extending match behaviour">
+      <t></t>
+    </section>
+
+    <section anchor="IANA" title="IANA Considerations">
+      <t>This document requests creation of a new registry called the
+        "Routing Qualifier Registry."  The registry consists of an ordered
+        list of items, no identifier value needs to be assigned.  The only
+        purpose of the registry is to document the order in which qualifiers
+        are evaluated.</t>
+      <t>Registry items must specify the following information:
+        <list style="symbols">
+          <t>Name of the qualifier</t>
+          <t>Applicable protocols (IP version 4 and/or IP version 6)</t>
+          <t>Specification reference (possibly distinct between IPv4 and IPv6)</t>
+          <t>Insertion position, listing both the previous and next entry to avoid
+            confusion</t>
+        </list>
+      </t>
+      <t>The allocation policy per <xref target="RFC5226" /> is "IETF Review."
+        This is intended to help keep routing systems compatible with each
+        other.</t>
+      <section title="Initial list">
+      </section>
+    </section>
+
+    <section anchor="Security" title="Security Considerations">
+      <t>This document specifies only the ordering of lookups.  Making no
+        change to the existing situation, there are no security considerations
+        for this document.</t>
+    </section>
+
+    <section anchor="Privacy" title="Privacy Considerations">
+      <t>As with security considerations, no privacy considerations apply to
+        this document.</t>
+      <t>Introducing additional routing qualifiers has the potential to expose
+        information that was not previously visible, in particular if such
+        information would otherwise be scrubbed by a process like NAT.
+        However, these considerations are left for documents actually
+        introducing new routing qualifiers.</t>
+    </section>
+
+    <section anchor="Acknowledgements" title="Acknowledgements">
+      <t>TBD</t>
+    </section>
+
+    <section anchor="log" title="Change Log">
+      <t><list style="hanging">
+          <t hangText="Initial Version:">September 2014</t>
+        </list></t>
+    </section>
+  </middle>
+
+  <back>
+    <references title="Normative References">
+      <?rfc include="reference.RFC.2119"?>
+      <?rfc include="reference.RFC.5226"?>
+    </references>
+
+    <!--
+    <references title="Informative References">
+    </references>
+    -->
+  </back>
+</rfc>

@@ -38,24 +38,23 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-zzzz-rtgwg-dst-src-routing-00"
+<rfc category="std" docName="draft-lamparter-rtgwg-dst-src-routing-00"
      ipr="trust200902">
   <front>
     <title abbrev="Destination/Source Routing">
       Destination/Source Routing</title>
 
-    <author fullname="ZZZZ" initials="Z." surname="Z">
-      <organization>ZZZZ</organization>
-
+    <author fullname="David Lamparter" initials="D." surname="Lamparter">
+      <organization>NetDEF</organization>
       <address>
         <postal>
           <street></street>
-          <city></city>
-          <code></code>
+          <city>Leipzig</city>
+          <code>04103</code>
           <region></region>
-          <country></country>
+          <country>Germany</country>
         </postal>
-        <email></email>
+        <email>david@opensourcerouting.org</email>
       </address>
     </author>
 
@@ -64,10 +63,11 @@
     <workgroup>rtgwg</workgroup>
 
     <abstract>
-      <t>Using packets' source addresses in route lookups allows using multiple
-        sources of addressing (assigned prefixes) in a single network.  This
-        document specifies the protocol-independent details of source-specific
-        route lookups.</t>
+      <t>This note specifies using packets' source addresses in route lookups
+        as additional qualifier per <xref target="extra-qualifiers"/>, as
+        applicable to <xref target="RFC2460">IPv6</xref> without specific
+        considerations for any routing protocol.
+      </t>
     </abstract>
   </front>
 
@@ -109,6 +109,8 @@
         and matched.</t>
 
       <section title="Lookup ordering and disambiguation">
+        <t>As outlined in <xref target="extra-qualifiers"/>, there is a fixed
+          longest-match ordering dor route lookup.</t>
         <t>For longest-match lookups, the source prefix is matched after the
           destination prefix.  This is to say, first the longest matching
           destination prefix is found, then the table is searched for the route
@@ -119,13 +121,24 @@
         <t>A router MUST continue to a less specific destination prefix if no
           route matches on the source prefix.  It MUST NOT terminate lookup
           on such an event.</t>
+        <!-- XXX V - - - - - - - - - - - - - - - - - - - - - - - - - - - - --> 
         <t>TBD: examples?</t>
+        <!-- XXX A - - - - - - - - - - - - - - - - - - - - - - - - - - - - --> 
       </section>
     </section>
 
     <section title="Applicability">
       <section title="Recursive Route Lookups">
-        <t>... form intersection, possibly clone route?</t>
+        <!-- XXX V - - - - - - - - - - - - - - - - - - - - - - - - - - - - --> 
+        <t>TBD</t>
+        <t><list style="hanging">
+          <t>variant 1: ignore dst-src routes, only use routes with src ::/0</t>
+          <t>variant 2a: exact-match src prefixes from resolvee to resolvent (will not work for a lot of cases)</t>
+          <t>variant 2b: longer-match src prefixes from resolvee to resolvent (nexthop src may be superset of looked-up route)</t>
+          <t>variant 3: create multiple instances of the route whose nexthop is resolved,
+            with different source prefixes</t>
+        </list></t>
+        <!-- XXX A - - - - - - - - - - - - - - - - - - - - - - - - - - - - --> 
       </section>
       <section title="Unicast Reverse Path Filtering">
         <t>Unicast reverse path filtering MUST use dst-src routes analog to its
@@ -144,6 +157,14 @@
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
+      <t>This document updates the "Routing Qualifier Registry" described in
+        <xref target="extra-qualifiers"/>.  The following entry is added:</t>
+      <t><list style="hanging">
+        <t>Name: IPv6 Source Address</t>
+        <t>Applicable Protocols: IPv6</t>
+        <t>Reference: this document</t>
+        <t>Position: after IPv6 Destination Address, before end of list</t>
+      </list></t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
@@ -151,6 +172,15 @@
         routes that are more specific than the previously most specific, i.e.
         host routes.  This can be a security concern if an operator was relying
         on the impossibility of hijacking such a route.</t>
+
+      <!-- from draft-baker-ipv6-dst-src-routing -->
+      <t>While source/destination routing could be used as part of a security
+        solution, it is not really intended for the purpose. The approach
+        limits routing, in the sense that it routes traffic to an appropriate
+        egress, or gives a way to prevent communication between systems not
+        included in a source/destination route, and in that sense could be
+        considered similar to an access list that is managed by and scales with
+        routing.</t>
     </section>
 
     <section anchor="Privacy" title="Privacy Considerations">
@@ -162,6 +192,11 @@
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
+      <t>The base underlying this document was first outlaid by Ole Troan and
+        Lorenzo Colitti in <xref target="homenet-sadr"/> for application in the
+        homenet area.</t>
+      <t>This document is largely the result of discussions with Fred Baker and
+        derives from <xref target="isis-dst-src"/>.</t>
     </section>
 
     <section anchor="log" title="Change Log">
@@ -174,13 +209,120 @@
   <back>
     <references title="Normative References">
       <?rfc include="reference.RFC.2119"?>
+      <?rfc include="reference.RFC.2460"?>
       <?rfc include="reference.RFC.2827"?>
-      <?rfc include="reference.RFC.5226"?>
+<!-- draft-lamparter-rtgwg-routing-discriminators-00.xml -->
+<reference anchor="extra-qualifiers"><front>
+    <title abbrev="Extending IP route lookup">
+      Considerations and Registry for extending IP route lookup</title>
+
+    <author fullname="David Lamparter" initials="D." surname="Lamparter">
+      <organization>NetDEF</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Leipzig</city>
+          <code>04103</code>
+          <region/>
+          <country>Germany</country>
+        </postal>
+        <email>david@opensourcerouting.org</email>
+      </address>
+    </author>
+
+    <date/>
+    <area>Internet Engineering Task Force</area>
+    <workgroup><!-- rtgwg --></workgroup>
+
+    <abstract>
+      <t>This document describes the behaviour of a routing system that
+        takes additional specifications on routes--extra qualifiers--into
+        account, augmenting longest match behaviour.</t>
+    </abstract>
+  </front>
+
+  </reference>
+<!-- draft-lamparter-rtgwg-routing-discriminators-00.xml -->
     </references>
 
-    <!--
     <references title="Informative References">
+<!-- draft-troan-homenet-sadr-01 -->
+<reference anchor="homenet-sadr"><front>
+    <title abbrev="IPv6 Multihoming with Source Address Dependent Routing (SADR)">
+      IPv6 Multihoming with Source Address Dependent Routing (SADR)</title>
+
+    <author fullname="Ole Troan" initials="O." surname="Troan">
+      <organization>Cisco Systems</organization>
+      <address>
+        <email>ot@cisco.com</email>
+      </address>
+    </author>
+    <author fullname="Lorenzo Colitti" initials="L." surname="Colitti">
+      <organization>Google</organization>
+      <address>
+        <email>lorenzo@google.com</email>
+      </address>
+    </author>
+
+    <date/>
+    <area>Internet Engineering Task Force</area>
+    <workgroup/>
+
+    <abstract>
+      <t>This note describes the changes necessary for IS-IS to route IPv6
+      traffic from a specified prefix to a specified prefix.</t>
+    </abstract>
+  </front>
+
+  </reference>
+<!-- draft-baker-ipv6-isis-dst-src-routing-02.xml -->
+<!-- draft-baker-ipv6-isis-dst-src-routing-02.xml -->
+<reference anchor="isis-dst-src"><front>
+    <title abbrev="IS-IS Source/Destination Routing">IPv6 Source/Destination
+    Routing using IS-IS</title>
+
+    <author fullname="Fred Baker" initials="F.J." surname="Baker">
+      <organization>Cisco Systems</organization>
+
+      <address>
+        <postal>
+          <street/>
+          <city>Santa Barbara</city>
+          <code>93117</code>
+          <region>California</region>
+          <country>USA</country>
+        </postal>
+
+        <email>fred@cisco.com</email>
+      </address>
+    </author>
+
+    <author fullname="David Lamparter" initials="D." surname="Lamparter">
+      <organization>NetDEF</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Leipzig</city>
+          <code>04103</code>
+          <region/>
+          <country>Germany</country>
+        </postal>
+        <email>david@opensourcerouting.org</email>
+      </address>
+    </author>
+
+    <date/>
+    <area>Internet Engineering Task Force</area>
+    <workgroup/>
+
+    <abstract>
+      <t>This note describes the changes necessary for IS-IS to route IPv6
+      traffic from a specified prefix to a specified prefix.</t>
+    </abstract>
+  </front>
+
+  </reference>
+<!-- draft-baker-ipv6-isis-dst-src-routing-02.xml -->
     </references>
-    -->
   </back>
 </rfc>

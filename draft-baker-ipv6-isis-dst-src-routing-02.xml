@@ -38,7 +38,7 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-baker-ipv6-isis-dst-src-routing-01"
+<rfc category="std" docName="draft-baker-ipv6-isis-dst-src-routing-02"
      ipr="trust200902">
   <front>
     <title abbrev="IS-IS Source/Destination Routing">IPv6 Source/Destination
@@ -64,7 +64,21 @@
       </address>
     </author>
 
-    <date year="2013"/>
+    <author fullname="David Lamparter" initials="D." surname="Lamparter">
+      <organization>NetDEF</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Leipzig</city>
+          <code>04103</code>
+          <region></region>
+          <country>Germany</country>
+        </postal>
+        <email>david@opensourcerouting.org</email>
+      </address>
+    </author>
+
+    <date/>
 
     <area>Internet Engineering Task Force</area>
 
@@ -72,7 +86,7 @@
 
     <abstract>
       <t>This note describes the changes necessary for IS-IS to route IPv6
-      traffic from a specified prefix to a specified prefix. </t>
+      traffic from a specified prefix to a specified prefix.</t>
     </abstract>
 
     <!--		
@@ -118,188 +132,238 @@
 -->
 
     <section title="Introduction">
-        <t>This specification builds on <xref target="RFC5308">IS-IS for
-        IPv6</xref> and its extensible TLV. This note defines the sub-TLV for
-        an <xref target="RFC2460">IPv6</xref> Source Prefix, to define routes
-        from a source prefix to a destination prefix.</t>
+      <t>This specification builds on <xref target="RFC5308">IS-IS for
+      IPv6</xref> and the critical extension TLV in <xref
+      target="critical-subtlvs"/>.  This note defines the sub-TLV for an
+      <xref target="RFC2460">IPv6</xref> Source Prefix, to define routes from
+      a source prefix to a destination prefix.</t>
 
-        <t>This implies not simply routing "to a destination", but routing "to
-        that destination AND from a specified source". It may be combined with
-        other qualifying attributes, such as "traffic going to that
-        destination AND using a specified flow label AND from a specified
-        source prefix". The obvious application is egress routing, as required
-        for a multihomed entity with a provider-allocated prefix from each of
-        several upstream networks. Traffic within the network could be
-        source/destination routed as well, or could be implicitly or
-        explicitly routed from "any prefix", ::/0. Other use cases are
-        described in <xref
-        target="I-D.baker-rtgwg-src-dst-routing-use-cases"/>. If a FIB
-        contains a route to a given destination from one or more prefixes not
-        including ::/0, and a given packet destined there that has a source
-        address that is in none of them, the packet in effect has no route,
-        just as if the destination itself were not in the route table.</t>
+      <t>This implements the Destination/Source Routing mechanism described
+        in <xref target="dst-src-routing"/>.
+      This implies not simply routing "to a destination", but routing "to
+      that destination AND from a specified source". It may be combined with
+      other qualifying attributes, such as "traffic going to that destination
+      AND using a specified flow label AND from a specified source prefix".
+      The obvious application is egress routing, as required for a multihomed
+      entity with a provider-allocated prefix from each of several upstream
+      networks. Traffic within the network could be source/destination routed
+      as well, or could be implicitly or explicitly routed from "any prefix",
+      ::/0. Other use cases are described in <xref
+      target="I-D.baker-rtgwg-src-dst-routing-use-cases"/>. If a FIB contains
+      a route to a given destination from one or more prefixes not including
+      ::/0, and a given packet destined there that has a source address that
+      is in none of them, the packet in effect has no route, just as if the
+      destination itself were not in the route table.</t>
 
-        <?rfc needLines="5" ?>
+      <?rfc needLines="5" ?>
 
-        <section title="Requirements Language">
-          <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
-          NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL"
-          in this document are to be interpreted as described in <xref
-          target="RFC2119"/>.</t>
-        </section>
+      <section title="Requirements Language">
+        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+        "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+        document are to be interpreted as described in <xref
+        target="RFC2119"/>.</t>
+      </section>
+    </section>
+
+    <section anchor="extensions" title="Theory of Routing">
+      <t>Both IS-IS and OSPF perform their calculations by building a lattice
+      of routers and links from the router performing the calculation to each
+      router, and then use routes (sequences in the lattice) to get to
+      destinations that those routes advertise connectivity to. Following the
+      SPF algorithm, calculation starts by selecting a starting point
+      (typically the router doing the calculation), and successively adding
+      {link, router} pairs until one has calculated a route to every router in
+      the network. As each router is added, including the original router,
+      destinations that it is directly connected to are turned into routes in
+      the route table: "to get to 2001:db8::/32, route traffic to {interface,
+      list of next hop routers}". For immediate neighbors to the originating
+      router, of course, there is no next hop router; traffic is handled
+      locally.</t>
+
+      <t>In this context, the route is qualified by a source prefix; It is
+      installed into the FIB with the destination prefix, and the FIB applies
+      the route if and only if the IPv6 source address also matches the
+      advertised prefix. Of course, there may be multiple LSPs in the RIB with
+      the same destination and differing source prefixes; these may also have
+      the same or differing next hop lists. The intended forwarding action is
+      to forward matching traffic to one of the next hop routers associated
+      with this destination and source prefix, or to discard non-matching
+      traffic as "destination unreachable".</t>
+
+      <t>TLVs that lack a source prefix sub-TLV match any source address
+      (i.e., the source prefix TLV defaults to ::/0), by definition.</t>
+
+      <t>When resolving Destination/Source Reachabilities, the SPF calculation
+      results used MUST reflect a calculation performed including only routers
+      that advertise support for the critical Source Prefix TLV defined in
+      section 3.  The mechanism for signaling this is described in <xref
+      target="critical-subtlvs"/>.  Routers that support this extension MUST
+      advertise support as described there.</t>
+
+      <?rfc needLines="5" ?>
+
+      <section title="Notation">
+        <t>For the purposes of this document, a route from the prefix A to the
+        prefix B (in other words, whose source prefix is A and whose
+        destination prefix is B) is expressed as A-&gt;B. A packet with the
+        source address A and the destination address B is similarly described
+        as A-&gt;B.</t>
       </section>
 
-      <section anchor="extensions" title="Theory of Routing">
-        <t>Both IS-IS and OSPF perform their calculations by building a
-        lattice of routers and links from the router performing the
-        calculation to each router, and then use routes (sequences in the
-        lattice) to get to destinations that those routes advertise
-        connectivity to. Following the SPF algorithm, calculation starts by
-        selecting a starting point (typically the router doing the
-        calculation), and successively adding {link, router} pairs until one
-        has calculated a route to every router in the network. As each router
-        is added, including the original router, destinations that it is
-        directly connected to are turned into routes in the route table: "to
-        get to 2001:db8::/32, route traffic to {interface, list of next hop
-        routers}". For immediate neighbors to the originating router, of
-        course, there is no next hop router; traffic is handled locally.</t>
+      <?rfc needLines="5" ?>
 
-        <t>In this context, the route is qualified by a source prefix; It is
-        installed into the FIB with the destination prefix, and the FIB
-        applies the route if and only if the IPv6 source address also matches
-        the advertised prefix. Of course, there may be multiple LSPs in the
-        RIB with the same destination and differing source prefixes; these may
-        also have the same or differing next hop lists. The intended
-        forwarding action is to forward matching traffic to one of the next
-        hop routers associated with this destination and source prefix, or to
-        discard non-matching traffic as "destination unreachable".</t>
+      <section title="Dealing with ambiguity">
+        <t>In any routing protocol, there is the possibility of ambiguity. For
+        example, one router might advertise a fairly general prefix - a
+        default route, a discard prefix (which consumes all traffic that is
+        not directed to an instantiated subnet), or simply an aggregated
+        prefix while another router advertises a more specific one. In
+        source/destination routing, potentially ambiguous cases include cases
+        in which the link state database contains two routes A-&gt;B' and
+        A'-&gt;B, in which A' is a more specific prefix within the prefix A
+        and B' is a more specific prefix within the prefix B. Traditionally,
+        we have dealt with ambiguous destination routes using a "longest match
+        first" rule. If the same datagram matches more than one destination
+        prefix advertised within an area, we follow the route with the longest
+        matching prefix.</t>
 
-        <t>LSAs that lack a source prefix sub-TLV match any source address
-        (i.e., the source prefix TLV defaults to ::/0), by definition.</t>
+        <t>With source/destination routes, as noted in <xref
+        target="I-D.baker-rtgwg-src-dst-routing-use-cases"/>, we follow a
+        similar but slightly different rule; the FIB lookup MUST yield the
+        route with the longest matching destination prefix that also matches
+        the source prefix constraint. In the event of a tie on the destination
+        prefix, it MUST also match the longest matching source prefix among
+        those options.</t>
 
-        <?rfc needLines="5" ?>
+        <t>An example of the issue is this. Suppose we have two routes: <list
+            style="numbers">
+            <t>2001:db8:1::/48 -&gt; 2001:db8:3:3::/64</t>
 
-        <section title="Notation">
-          <t>For the purposes of this document, a route from the prefix A to
-          the prefix B (in other words, whose source prefix is A and whose
-          destination prefix is B) is expressed as A-&gt;B. A packet with the
-          source address A and the destination address B is similarly
-          described as A-&gt;B.</t>
-        </section>
+            <t>2001:db8:2::/48 -&gt; 2001:db8:3::/48</t>
+          </list></t>
 
-        <?rfc needLines="5" ?>
+        <t>and a packet <list style="empty">
+            <t>2001:db8:2::1 -&gt; 2001:db8:3:3::1</t>
+          </list></t>
 
-        <section title="Dealing with ambiguity">
-          <t>In any routing protocol, there is the possibility of ambiguity.
-          For example, one router might advertise a fairly general prefix - a
-          default route, a discard prefix (which consumes all traffic that is
-          not directed to an instantiated subnet), or simply an aggregated
-          prefix while another router advertises a more specific one. In
-          source/destination routing, potentially ambiguous cases include
-          cases in which the link state database contains two routes A-&gt;B'
-          and A'-&gt;B, in which A' is a more specific prefix within the
-          prefix A and B' is a more specific prefix within the prefix B.
-          Traditionally, we have dealt with ambiguous destination routes using
-          a "longest match first" rule. If the same datagram matches more than
-          one destination prefix advertised within an area, we follow the
-          route with the longest matching prefix.</t>
-
-          <t>With source/destination routes, as noted in <xref
-          target="I-D.baker-rtgwg-src-dst-routing-use-cases"/>, we follow a
-          similar but slightly different rule; the FIB lookup MUST yield the
-          route with the longest matching destination prefix that also matches
-          the source prefix constraint. In the event of a tie on the
-          destination prefix, it MUST also match the longest matching source
-          prefix among those options.</t>
-
-          <t>An example of the issue is this. Suppose we have two routes:
-          <list style="numbers">
-              <t>2001:db8:1::/48 -&gt; 2001:db8:3:3::/64</t>
-
-              <t>2001:db8:2::/48 -&gt; 2001:db8:3::/48</t>
-            </list></t>
-
-          <t>and a packet <list style="empty">
-              <t>2001:db8:2::1 -&gt; 2001:db8:3:3::1</t>
-            </list></t>
-
-          <t>If we require the algorithm to follow the longest destination
-          match without regard to the source, the destination address matches
-          2001:db8:3:3::/64 (the first route), and the source address doesn't
-          match the constraint of the first route; we therefore have no route.
-          The FIB algorithm, in this example, must therefore match the second
-          route, even though it is not the longest destination match, because
-          it also matches the source address.</t>
-        </section>
-
-        <?rfc needLines="5" ?>
-
-        <section title="Interactions with other constraints">
-          <t>In the event that there are other constraints on routing, such as
-          proposed in <xref
-          target="I-D.baker-ipv6-isis-dst-flowlabel-routing"/>, the effect is
-          a logical AND. The FIB lookup must yield the route with the longest
-          matching destination prefix that also matches each of the
-          constraints.</t>
-        </section>
+        <t>If we require the algorithm to follow the longest destination match
+        without regard to the source, the destination address matches
+        2001:db8:3:3::/64 (the first route), and the source address doesn't
+        match the constraint of the first route; we therefore have no route.
+        The FIB algorithm, in this example, must therefore match the second
+        route, even though it is not the longest destination match, because it
+        also matches the source address.</t>
       </section>
 
-      <section anchor="IS-IS-extensions-ipv6" title="Extensions necessary for IPv6 Source/Destination Routing in IS-IS">
-        <t>Section 2 of <xref target="RFC5308"/> defines the "IPv6
-        Reachability TLV", and carries in it destination prefix
-        advertisements. It has the capability of extension, using
-        sub-TLVs.</t>
+      <?rfc needLines="5" ?>
 
-        <t>We define the Source Prefix Sub-TLV as in <xref
-        target="IS-IS-source"/>. As noted in <xref target="extensions"/>, any
-        IPv6 Reachability TLV that does not specify a source prefix is
-        understood to as specifying ::/0 as the source prefix.</t>
+      <section title="Interactions with other constraints">
+        <t>In the event that there are other constraints on routing, such as
+        proposed in <xref
+        target="I-D.baker-ipv6-isis-dst-flowlabel-routing"/>, the effect is a
+        logical AND. The FIB lookup must yield the route with the longest
+        matching destination prefix that also matches each of the
+        constraints.  The general mechanics for this are described in <xref
+          target="extra-qualifiers"/>.</t>
+      </section>
 
-        <section anchor="IS-IS-source" title="Source Prefix sub-TLV">
-          <?rfc needLines="10"?>
+      <section title="Multi-topology Routing">
+        <t>While not mandatory, IS-IS is often implemented as <xref
+        target="RFC5120">Multi Topology Routing</xref> with IPv4 or other
+        protocols in the same or different topologies.  The TLV structure in
+        <xref target="critical-subtlvs"/> is topology-agnostic in that it
+        always includes the topology ID, which may be zero to indicate the
+        default topology.</t>
 
-          <figure title="Source Prefix Sub-TLV">
-            <artwork align="center"><![CDATA[
+        <t>The mechanism in this document and its Sub-TLV are applicable to
+        any topology that carries routing information used for IPv6 Unicast
+        routing.  Destination/Source reachability information SHOULD NOT
+        be placed differently from "plain" destination reachabilities.</t>
+
+        <t>A system MUST NOT originate Destination/Source Reachabilities in
+        a topology that is exclusively configured for multicast RPF operation.
+        If a topology is shared between unicast lookups and multicast
+        reverse path lookups, reachabilities with a source prefix other than
+        ::/0 MUST be ignored for multicast reverse path lookups.</t>
+
+        <t>The statements in the previous two paragraphs currently result in
+        applicability of Destination/Source routes as:</t>
+        <figure title="Applicability of Destination/Source IPv6 Reachabilities">
+          <artwork align="left"><![CDATA[
+MT-ID   designated usage   applicability
+0       default topology   yes
+1       IPv4 management    no
+2       IPv6 default       yes
+3       IPv4 multicast     no
+4       IPv6 multicast     no
+5       IPv6 management    yes
+]]></artwork>
+        </figure>
+      </section>
+    </section>
+
+    <section anchor="IS-IS-extensions-ipv6"
+             title="Extensions necessary for IPv6 Source/Destination Routing in IS-IS">
+      <t>Section 2 of <xref target="RFC5308"/> defines the "IPv6 Reachability
+      TLV", and carries in it destination prefix advertisements. It has the
+      capability of extension, using sub-TLVs.</t>
+
+      <t>We define the Source Prefix Sub-TLV as in <xref
+      target="IS-IS-source"/>. As noted in <xref target="extensions"/>, any
+      IPv6 Reachability TLV that does not specify a source prefix is
+      understood to as specifying ::/0 (any IPv6 address) as the source
+      prefix.</t>
+
+      <section anchor="IS-IS-source" title="Source Prefix sub-TLV">
+        <?rfc needLines="10"?>
+        <t>The following Sub-TLV is defined for the critical part of TLV
+          TBD2 defined in <xref target="critical-subtlvs"/>:</t>
+
+        <figure title="Source Prefix Sub-TLV">
+          <artwork align="center"><![CDATA[
  0                   1                   2                   3
  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |      Type     |    Length     |Prefix Length  |    Prefix
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ]]></artwork>
-          </figure>
+        </figure>
 
-          <t><list style="hanging">
-              <t hangText="Source Prefix Type:">assigned by IANA</t>
+        <t><list style="hanging">
+            <t hangText="Source Prefix Type:">assigned by IANA</t>
 
-              <t hangText="TLV Length:">Length of the sub-TLV in octets</t>
+            <t hangText="TLV Length:">Length of the sub-TLV in octets</t>
 
-              <t hangText="Prefix Length:">Length of the prefix in bits</t>
+            <t hangText="Prefix Length:">Length of the prefix in bits</t>
 
-              <t hangText="Prefix:">(source prefix length+7)/8 octets of
-              prefix</t>
-            </list></t>
-        </section>
+            <t hangText="Prefix:">(source prefix length+7)/8 octets of
+            prefix</t>
+          </list></t>
       </section>
+    </section>
 
     <section anchor="IANA" title="IANA Considerations">
-      <t>The source prefix type mentioned in <xref
-      target="IS-IS-extensions-ipv6"/> must be defined.</t>
+      <t>The "Sub-TLVs for TLVs TBD1 (critical) and TBD2 (critical)" registry
+        defined in <xref target="critical-subtlvs"/> is extended by the
+        following element:</t>
+      <t><list style="hanging">
+          <t hangText="Source Prefix Type:">assigned by IANA</t>
+          <t hangText="Description:">IPv6 Source Prefix</t>
+          <t hangText="Applicable to TLV TBD1 (IPv4):">No</t>
+          <t hangText="Applicable to TLV TBD2 (IPv6):">Yes</t>
+        </list></t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
-      <t>While source/destination routing could be used as part of a security
-      solution, it is not really intended for the purpose. The approach limits
-      routing, in the sense that it routes traffic to an appropriate egress,
-      or gives a way to prevent communication between systems not included in
-      a source/destination route, and in that sense could be considered
-      similar to an access list that is managed by and scales with
-      routing.</t>
+      <t>There are no security considerations specific to this document.
+        However, the considerations from <xref target="dst-src-routing"/> and
+        <xref target="critical-subtlvs"/> are particularly relevant to this
+        document.</t>
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t/>
     </section>
-
   </middle>
 
   <back>
@@ -313,18 +377,127 @@
       <?rfc include="reference.RFC.2460" ?>
 
       <?rfc include="reference.RFC.5308" ?>
+
+<!-- draft-lamparter-rtgwg-routing-discriminators-00.xml -->
+<reference anchor="extra-qualifiers"><front>
+    <title abbrev="Extending IP route lookup">
+      Considerations and Registry for extending IP route lookup</title>
+
+    <author fullname="David Lamparter" initials="D." surname="Lamparter">
+      <organization>NetDEF</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Leipzig</city>
+          <code>04103</code>
+          <region/>
+          <country>Germany</country>
+        </postal>
+        <email>david@opensourcerouting.org</email>
+      </address>
+    </author>
+
+    <date/>
+    <area>Internet Engineering Task Force</area>
+    <workgroup><!-- rtgwg --></workgroup>
+
+    <abstract>
+      <t>This document describes the behaviour of a routing system that
+        takes additional specifications on routes--extra qualifiers--into
+        account, augmenting longest match behaviour.</t>
+    </abstract>
+  </front>
+
+  </reference>
+<!-- draft-lamparter-rtgwg-routing-discriminators-00.xml -->
+<!-- draft-lamparter-rtgwg-dst-src-routing-00.xml -->
+<reference anchor="dst-src-routing"><front>
+    <title abbrev="Destination/Source Routing">
+      Destination/Source Routing</title>
+
+    <author fullname="David Lamparter" initials="D." surname="Lamparter">
+      <organization>NetDEF</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Leipzig</city>
+          <code>04103</code>
+          <region/>
+          <country>Germany</country>
+        </postal>
+        <email>david@opensourcerouting.org</email>
+      </address>
+    </author>
+
+    <date year="2014"/>
+    <area>Internet Engineering Task Force</area>
+    <workgroup>rtgwg</workgroup>
+
+    <abstract>
+      <t>This note specifies using packets' source addresses in route lookups
+        as additional qualifier per <xref target="extra-qualifiers"/>, as
+        applicable to <xref target="RFC2460">IPv6</xref> without specific
+        considerations for any routing protocol.
+      </t>
+    </abstract>
+  </front>
+
+  </reference>
+<!-- draft-lamparter-rtgwg-dst-src-routing-00.xml -->
+<!-- draft-lamparter-isis-reachability-critical-subtlvs.xml -->
+<reference anchor="critical-subtlvs"><front>
+    <title abbrev="IS-IS Reachability with critical Sub-TLVs">
+      IS-IS Reachability with critical Sub-TLVs</title>
+
+    <author fullname="David Lamparter" initials="D." surname="Lamparter">
+      <organization>NetDEF</organization>
+      <address>
+        <postal>
+          <street/>
+          <city>Leipzig</city>
+          <code>04103</code>
+          <region/>
+          <country>Germany</country>
+        </postal>
+        <email>david@opensourcerouting.org</email>
+      </address>
+    </author>
+
+    <date/>
+    <area>Internet Engineering Task Force</area>
+    <workgroup>isis</workgroup>
+
+    <abstract>
+      <t>While previously existing TLVs for IP Reachability extensibly support
+        Sub-TLVs, these cannot be marked as critical.  This is required for
+        extending router behaviour with additional qualifiers on routes, hence
+        this document introduces new Reachability TLVs that support critical
+        Sub-TLVs.</t>
+    </abstract>
+  </front>
+
+  </reference>
+<!-- draft-lamparter-isis-reachability-critical-subtlvs.xml -->
+
     </references>
 
     <references title="Informative References">
       <?rfc include="reference.I-D.baker-rtgwg-src-dst-routing-use-cases"?>
 
       <?rfc include="reference.I-D.baker-ipv6-isis-dst-flowlabel-routing"?>
+
+      <?rfc include="reference.RFC.5120" ?>
     </references>
+
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
           <t hangText="Initial Version:">February 2013</t>
 
           <t hangText="updated Version:">August 2013</t>
+
+          <t hangText="Added MTR:">August 2014</t>
+
+          <t hangText="Split into 4 drafts:">October 2014</t>
         </list></t>
     </section>
   </back>

@@ -38,30 +38,29 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-zzzz-rtgwg-routing-extra-qualifiers-00"
+<rfc category="std" docName="draft-lamparter-rtgwg-routing-extra-qualifiers-00"
      ipr="trust200902">
   <front>
     <title abbrev="Extending IP route lookup">
       Considerations and Registry for extending IP route lookup</title>
 
-    <author fullname="ZZZZ" initials="Z." surname="Z">
-      <organization>ZZZZ</organization>
-
+    <author fullname="David Lamparter" initials="D." surname="Lamparter">
+      <organization>NetDEF</organization>
       <address>
         <postal>
-          <street></street>
-          <city></city>
-          <code></code>
+          <street/>
+          <city>Leipzig</city>
+          <code>04103</code>
           <region></region>
-          <country></country>
+          <country>Germany</country>
         </postal>
-        <email></email>
+        <email>david@opensourcerouting.org</email>
       </address>
     </author>
 
-    <date year="2014" />
+    <date/>
     <area>Internet Engineering Task Force</area>
-    <workgroup>rtgwg</workgroup>
+    <workgroup><!-- rtgwg --></workgroup>
 
     <abstract>
       <t>This document describes the behaviour of a routing system that
@@ -107,8 +106,7 @@
         individual extensions to route match behaviour MUST clarify their
         respective applicability.</t>
     </section>
-    <section title="Match criteria">
-      <t>(This section is informational only.)</t>
+    <section title="Match criteria (informational)">
       <section title="Virtual routers">
         <t>While not documented to this extent, an implementation capable of
           partitioning a physical router into multiple virtual routers is an
@@ -170,6 +168,7 @@
         This is intended to help keep routing systems compatible with each
         other.</t>
       <section title="Initial list">
+        <t>TBD</t>
       </section>
     </section>
 
@@ -203,6 +202,7 @@
   <back>
     <references title="Normative References">
       <?rfc include="reference.RFC.2119"?>
+      <?rfc include="reference.RFC.2827"?>
       <?rfc include="reference.RFC.5226"?>
     </references>
 

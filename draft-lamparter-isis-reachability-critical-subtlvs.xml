@@ -38,28 +38,27 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-zzzz-isis-reachability-critical-subtlvs-00"
+<rfc category="std" docName="draft-lamparter-isis-reachability-critical-subtlvs-00"
      ipr="trust200902">
   <front>
     <title abbrev="IS-IS Reachability with critical Sub-TLVs">
       IS-IS Reachability with critical Sub-TLVs</title>
 
-    <author fullname="ZZZZ" initials="Z." surname="Z">
-      <organization>ZZZZ</organization>
-
+    <author fullname="David Lamparter" initials="D." surname="Lamparter">
+      <organization>NetDEF</organization>
       <address>
         <postal>
           <street></street>
-          <city></city>
-          <code></code>
+          <city>Leipzig</city>
+          <code>04103</code>
           <region></region>
-          <country></country>
+          <country>Germany</country>
         </postal>
-        <email></email>
+        <email>david@opensourcerouting.org</email>
       </address>
     </author>
 
-    <date year="2014" />
+    <date/>
     <area>Internet Engineering Task Force</area>
     <workgroup>isis</workgroup>
 
@@ -176,6 +175,7 @@
           <artwork>
 (2/4 bytes TLV header)
 2 octets of MT ID (12 bits, top 4 bits reserved)
+-- multiple (n &gt;= 1) occurences of the following:
 4 octets of metric information
 1 octet of control information, consisting of
      1 bit of up/down information
@@ -185,6 +185,7 @@
 4-n optional octets of sub-TLVs, if present consisting of
      1/2 octets of length of critical sub-TLVs
      2-n octets of critical sub-TLVs,
+     -- depending on presence of optional sub-TLVs indication:
      0-2 octets of length of optional sub-TLVs
      0-n octets of optional sub-TLVs,
           where each sub-TLV consists of a sequence of
@@ -236,14 +237,13 @@
           the entire TLV.</t>
         <t>Sub-TLV combination length and numbers specify supported Sub-TLVs
           for the TLVs with applicable TLV numbers listed before.  As with
-          Applicable TLVs, these are units of 2 octets each.  The LSB of the
-          combination length is redefined to be the "Combinatorial" bit:</t>
-        <t>
-          <list style="symbols">
-            <t>C=0: only exact list of Sub-TLVs supported</t>
-            <t>C=1: any combination of each TLV present or not is supported</t>
-          </list>
-        </t>
+          Applicable TLVs, these are units of 2 octets each.</t>
+        <t>The LSB of the combination length is redefined to be the
+          "Combinatorial" bit.  Any mixture (present or not present) of
+          Sub-TLVs listed with C=1, plus any Sub-TLVs present in at most one
+          list with C=0 are understood to be supported by the router.  A
+          combination of Sub-TLVs present in two distinct lists with C=0 MUST
+          NOT be assumed to be in a router's supported set.</t>
         <t>The block of Sub-TLV combination length and numbers MAY occur
           multiple times, as MAY the entire TLV.  The information MUST be
           merged.</t>

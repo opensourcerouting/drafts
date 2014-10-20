@@ -162,11 +162,18 @@
         these Sub-TLVs.  This would result in a disagreement on shortest path
         with other routers, which correctly used a SPF tree for the specific
         combination.</t>
+
+      <section title="Simplified SPF">
+        <t>TBD: It is possible to construct a variant of this that doesn't
+          implicitly work with multiple topologies, instead marking routes as
+          unreachable if they transit over routers that do not support the
+          critical TLVs.  This may be useful for simpler implementations.</t>
+      </section>
     </section>
 
     <section title="TLV formats">
       <section title="IP/IPv6 Reachability TLV">
-        <t>The encoding for TLVs TBD1 and TBD2 is the modified from TLVs 235 and
+        <t>The encoding for TLVs TBD1 and TBD2 is modified from TLVs 235 and
           237 by inserting a second length field for the critical Sub-TLV part
           before the existing length field for the optional Sub-TLV part.  The
           critical Sub-TLV part follows after the length field, then the
@@ -188,7 +195,7 @@
      -- depending on presence of optional sub-TLVs indication:
      0-2 octets of length of optional sub-TLVs
      0-n octets of optional sub-TLVs,
-          where each sub-TLV consists of a sequence of
+          where each sub-TLV (critical or optional) is a sequence of
                1/2 octets of sub-type
                1/2 octets of length of the value field of the sub-TLV
                0-n octets of value
@@ -202,8 +209,8 @@
         <t>The critical sub-TLV part MUST NOT be empty.  Reachability TLVs
           without a critical Sub-TLV field MUST be used instead in this
           case.</t>
-        <t>The optional sub-TLV length field SHOULD NOT be present if the
-          "presence of optional sub-TLVs" bit is zero.</t>
+        <t>As in TLVs 235 and 237, the optional sub-TLV length and data fields
+          are only present if the "presence of optional sub-TLVs" bit is one.</t>
       </section>
       <section title="Reachability Critical Sub-TLVs Supported TLV">
         <t></t>
@@ -314,17 +321,33 @@ TBD3    Reachability Critical Sub-TLVs Supported
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
+      <t>This document is largely the result of discussions with Fred Baker.</t>
     </section>
 
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
-          <t hangText="Initial Version:">September 2014</t>
+          <t hangText="Initial Version:">October 2014</t>
         </list></t>
     </section>
   </middle>
 
   <back>
     <references title="Normative References">
+      <reference anchor="IS-IS">
+        <front>
+          <!--   [IS-IS]    ISO/IEC 10589:2002, Second Edition, "", 2002. -->
+          <title>Intermediate System to Intermediate System Intra-Domain
+            Routing Exchange Protocol for use in Conjunction with the Protocol
+            for Providing the Connectionless-mode Network Service (ISO
+            8473)</title>
+          <author>
+            <organization>ISO/IEC</organization>
+          </author>
+          <date year="2002"/>
+        </front>
+        <seriesInfo name="ISO/IEC" value="10589:2002, Second Edition"/>
+      </reference>
+
       <?rfc include="reference.RFC.2119"?>
       <?rfc include="reference.RFC.5120"?>
       <?rfc include="reference.RFC.7356"?>

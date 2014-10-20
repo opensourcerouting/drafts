@@ -370,11 +370,26 @@ MT-ID   designated usage   applicability
     <!-- references split to informative and normative -->
 
     <references title="Normative References">
-      <?rfc include="reference.ISO.10589.1992" ?>
+      <reference anchor="IS-IS">
+        <front>
+          <!--   [IS-IS]    ISO/IEC 10589:2002, Second Edition, "", 2002. -->
+          <title>Intermediate System to Intermediate System Intra-Domain
+            Routing Exchange Protocol for use in Conjunction with the Protocol
+            for Providing the Connectionless-mode Network Service (ISO
+            8473)</title>
+          <author>
+            <organization>ISO/IEC</organization>
+          </author>
+          <date year="2002"/>
+        </front>
+        <seriesInfo name="ISO/IEC" value="10589:2002, Second Edition"/>
+      </reference>
 
       <?rfc include="reference.RFC.2119"?>
 
       <?rfc include="reference.RFC.2460" ?>
+
+      <?rfc include="reference.RFC.5120" ?>
 
       <?rfc include="reference.RFC.5308" ?>
 
@@ -397,9 +412,9 @@ MT-ID   designated usage   applicability
       </address>
     </author>
 
-    <date/>
-    <area>Internet Engineering Task Force</area>
-    <workgroup><!-- rtgwg --></workgroup>
+    <date year="2014" month="October"/>
+    <area>Routing</area>
+    <workgroup>rtgwg</workgroup>
 
     <abstract>
       <t>This document describes the behaviour of a routing system that
@@ -408,6 +423,7 @@ MT-ID   designated usage   applicability
     </abstract>
   </front>
 
+    <seriesInfo name='Internet-Draft' value='draft-lamparter-rtgwg-routing-discriminators-00' />
   </reference>
 <!-- draft-lamparter-rtgwg-routing-discriminators-00.xml -->
 <!-- draft-lamparter-rtgwg-dst-src-routing-00.xml -->
@@ -429,8 +445,8 @@ MT-ID   designated usage   applicability
       </address>
     </author>
 
-    <date year="2014"/>
-    <area>Internet Engineering Task Force</area>
+    <date year="2014" month="October"/>
+    <area>Routing</area>
     <workgroup>rtgwg</workgroup>
 
     <abstract>
@@ -442,6 +458,7 @@ MT-ID   designated usage   applicability
     </abstract>
   </front>
 
+    <seriesInfo name='Internet-Draft' value='draft-lamparter-rtgwg-dst-src-routing-00'/>
   </reference>
 <!-- draft-lamparter-rtgwg-dst-src-routing-00.xml -->
 <!-- draft-lamparter-isis-reachability-critical-subtlvs.xml -->
@@ -463,8 +480,8 @@ MT-ID   designated usage   applicability
       </address>
     </author>
 
-    <date/>
-    <area>Internet Engineering Task Force</area>
+    <date year="2014" month="October"/>
+    <area>Routing</area>
     <workgroup>isis</workgroup>
 
     <abstract>
@@ -476,6 +493,7 @@ MT-ID   designated usage   applicability
     </abstract>
   </front>
 
+    <seriesInfo name='Internet-Draft' value='draft-lamparter-isis-reachability-critical-subtlvs-00'/>
   </reference>
 <!-- draft-lamparter-isis-reachability-critical-subtlvs.xml -->
 
@@ -483,10 +501,7 @@ MT-ID   designated usage   applicability
 
     <references title="Informative References">
       <?rfc include="reference.I-D.baker-rtgwg-src-dst-routing-use-cases"?>
-
       <?rfc include="reference.I-D.baker-ipv6-isis-dst-flowlabel-routing"?>
-
-      <?rfc include="reference.RFC.5120" ?>
     </references>
 
     <section anchor="log" title="Change Log">

@@ -59,13 +59,13 @@
     </author>
 
     <date/>
-    <area>Internet Engineering Task Force</area>
-    <workgroup><!-- rtgwg --></workgroup>
+    <area>Routing</area>
+    <workgroup>rtgwg</workgroup>
 
     <abstract>
       <t>This document describes the behaviour of a routing system that
         takes additional specifications on routes--extra qualifiers--into
-        account, augmenting longest match behaviour.</t>
+	account on a hop-by-hop basis, augmenting longest match behaviour.</t>
     </abstract>
   </front>
 
@@ -135,18 +135,116 @@
           exit in smaller multihomed networks.  This is distinct from policy
           routing in that only few select (usually default) routes would be
           annotated with source prefixes.</t>
+        <t>Various aspects of this are described in:</t>
+        <t><list style="hanging">
+            <t><xref target="I-D.troan-homenet-sadr"/></t>
+            <t><xref target="I-D.boutier-homenet-source-specific-routing"/></t>
+            <t><xref target="I-D.sarikaya-6man-sadr-overview"/></t>
+            <t><xref target="I-D.baker-rtgwg-src-dst-routing-use-cases"/></t>
+            <t><xref target="I-D.baker-ipv6-isis-dst-src-routing"/></t>
+            <t><xref target="I-D.baker-ipv6-ospf-dst-src-routing"/></t>
+            <t><xref target="I-D.baker-rtgwg-src-dst-routing-use-cases"/></t>
+        </list></t>
       </section>
       <section title="Flowlabel routing">
-        <t>TBD</t>
+        <t>TBD, described in:</t>
+        <t><list style="hanging">
+            <t><xref target="I-D.baker-ipv6-isis-dst-flowlabel-routing" /></t>
+            <t><xref target="I-D.baker-ipv6-ospf-dst-flowlabel-routing" /></t>
+        </list></t>
       </section>
       <section title="QoS/DSCP traffic class based routing">
-        <t>TBD</t>
+        <t>TBD (deprecated, reference only)</t>
       </section>
 
     </section>
 
     <section title="Requirements to extending match behaviour">
-      <t></t>
+      <section title="Match ordering">
+        <t>Adding further criteria to be looked up when forwarding packets on
+          a hop-by-hop basis has the very fundamental requirement that all
+          routers behave the same way in choosing the most specific route when
+          there are multiple eligible routes.</t>
+        <t>This document disambiguates this situation by recording the order of
+          specificness in a registry.  This means that the comparison for "more
+          specific", here indicated by A &lt; B (to mean A is more specific
+          than B), is redefined as concatenation for attributes a, b, c as:</t>
+        <figure><artwork><![CDATA[
+A < B :=    Aa <  Ba
+        || (Aa == Ba && Ab <  Bb)
+        || (Aa == Ba && Ab == Bb && Ac < Bc )
+]]>
+</artwork>
+        </figure>
+        <t>This transfers to a sample situation (using source address,
+          destination address and flowlabel as qualifiers):</t>
+        <figure><preamble>Example route table</preamble>
+          <artwork>
+          destination             source             flowlabel
+route A:  2001:db8::/32
+route B:  2001:db8:1234::/48      2001:db8:4567::/48
+route C:  2001:db8:1234::/48                         abcde
+route D:  2001:db8:1234:5678::/64 2001:db8:4567::/48 abcde
+route E:  2001:db8:1234:5678::/64
+</artwork>
+        </figure>
+        <t>Showing the different results between "destination, source,
+          flowlabel" ("DSF") and "destination, flowlabel, source" ("DFS")
+          ordering:</t>
+        <figure><preamble>Example match results</preamble>
+          <artwork>
+packet to be routed                                       result
+#  destination             source             flowlabel  "DSF" "DFS"
+1  2001:db8::1             2001:db8:4567::1   abcde       A     A
+
+2  2001:db8:1234::1        2001:db8:4567::1   abcde       B     C
+3  2001:db8:1234::1        2001:db8:4567::1   11111       B     B
+4  2001:db8:1234::1        2001:db8:1111::1   abcde       C     C
+5  2001:db8:1234::1        2001:db8:1111::1   11111       A     A
+
+6  2001:db8:1234:5678::1   2001:db8:4567::1   abcde       D     D
+7  2001:db8:1234:5678::1   2001:db8:4567::1   11111       E     E
+8  2001:db8:1234:5678::1   2001:db8:1111::1   abcde       E     E
+</artwork>
+        </figure>
+        <t>It should be noted that lookup may not result in usage of the most
+          specific element even for the first attribute (destination in the
+          example).  As displayed in #5 above, the route used is the most
+          specific one that satisfies all conditions.  If a system cannot "back
+          out" to less specific matches on earlier attributes, this MUST be
+          worked around by installing synthetic routes for these cases.</t>
+      </section>
+      <section title="Compatibility / Interoperability">
+        <t>Since a router implementing extra match qualifiers can have
+          additional, more specific routes than one that doesn't implement
+          these qualifiers, persistent loops can form between these systems.
+          To prevent this from happening, a simple rule must be followed:</t>
+        <t>The set of qualifiers used to route a particular packet MUST be a
+          subset of the qualifiers supported by the next hop.</t>
+        <t>This means in particular that a router using extra qualifier A MUST
+          NOT route packets based on a route that checks this qualifier to a
+          system that doesn't support qualifier A (and hence doesn't understand
+          the route).</t>
+        <t>There are 3 possible approaches to avoid such a condition:</t>
+        <t><list style="numbers">
+            <t>discard the packet (treat as destination unreachable)</t>
+            <t>calculate an alternate topology including only routers that
+              support qualifier A</t>
+            <t>if the lookup returns the same nexthop without using qualifier
+              A, use that result (i.e., the nexthop is known to correctly route
+              the packet)</t>
+        </list></t>
+        <t>Above considerations require under all circumstances a knowledge of
+          the next router's capabilities.  For routing protocols based on
+          hop-by-hop flooding (RIP <xref target="RFC2080" />, BGP <xref
+            target="RFC4271" />), knowing the peer's capabilities - or simply
+          relying on systems to only flood what they understand - is
+          sufficient.  Protocols building a link-state database (OSPF <xref
+            target="RFC5340" />, IS-IS <xref target="RFC5308" />) have the
+          additional opportunity to calculate alternate paths based on
+          knowledge of the entire domain, but cannot rely on routers flooding
+          only link state they support themselves.</t>
+      </section>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
@@ -168,7 +266,14 @@
         This is intended to help keep routing systems compatible with each
         other.</t>
       <section title="Initial list">
-        <t>TBD</t>
+        <t>The list is prepropagated with a single entry describing "classical"
+          destination-based routing:</t>
+        <t><list style="hanging">
+          <t>Name: Destination lookup</t>
+          <t>Applicable to IPv4 and IPv6</t>
+          <t>Specification references: <xref target="RFC4632" /> for IPv4,
+            <xref target="RFC2460" /> for IPv6</t>
+        </list></t>
       </section>
     </section>
 
@@ -189,12 +294,14 @@
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
-      <t>TBD</t>
+      <t>This document is largely the result of discussions with Fred Baker.</t>
+      <t>A lot of drafts exists in this general area, refer to the informative
+        references section below.</t>
     </section>
 
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
-          <t hangText="Initial Version:">September 2014</t>
+          <t hangText="Initial Version:">October 2014</t>
         </list></t>
     </section>
   </middle>
@@ -202,13 +309,25 @@
   <back>
     <references title="Normative References">
       <?rfc include="reference.RFC.2119"?>
-      <?rfc include="reference.RFC.2827"?>
+      <?rfc include="reference.RFC.2460"?>
+      <?rfc include="reference.RFC.4632"?>
       <?rfc include="reference.RFC.5226"?>
     </references>
 
-    <!--
     <references title="Informative References">
+      <?rfc include="reference.RFC.2080"?>
+      <?rfc include="reference.RFC.2827"?>
+      <?rfc include="reference.RFC.4271"?>
+      <?rfc include="reference.RFC.5308"?>
+      <?rfc include="reference.RFC.5340"?>
+      <?rfc include="reference.I-D.troan-homenet-sadr"?>
+      <?rfc include="reference.I-D.boutier-homenet-source-specific-routing"?>
+      <?rfc include="reference.I-D.sarikaya-6man-sadr-overview"?>
+      <?rfc include="reference.I-D.baker-rtgwg-src-dst-routing-use-cases"?>
+      <?rfc include="reference.I-D.baker-ipv6-isis-dst-flowlabel-routing"?>
+      <?rfc include="reference.I-D.baker-ipv6-ospf-dst-flowlabel-routing"?>
+      <?rfc include="reference.I-D.baker-ipv6-isis-dst-src-routing"?>
+      <?rfc include="reference.I-D.baker-ipv6-ospf-dst-src-routing"?>
     </references>
-    -->
   </back>
 </rfc>

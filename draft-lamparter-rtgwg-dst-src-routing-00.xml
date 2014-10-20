@@ -59,7 +59,7 @@
     </author>
 
     <date year="2014" />
-    <area>Internet Engineering Task Force</area>
+    <area>Routing</area>
     <workgroup>rtgwg</workgroup>
 
     <abstract>
@@ -86,6 +86,8 @@
         Instead, assigning addresses from multiple prefixes in parallel shifts
         the choice of uplink to the host.  However, now for finding the proper
         exit the source address of packets must be taken into account.</t>
+      <t>For a general introduction and aspects of interfacing routers to
+        hosts, refer to <xref target="I-D.sarikaya-6man-sadr-overview"/>.</t>
       <section title="Requirements Language">
         <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
         "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
@@ -121,24 +123,58 @@
         <t>A router MUST continue to a less specific destination prefix if no
           route matches on the source prefix.  It MUST NOT terminate lookup
           on such an event.</t>
-        <!-- XXX V - - - - - - - - - - - - - - - - - - - - - - - - - - - - --> 
-        <t>TBD: examples?</t>
-        <!-- XXX A - - - - - - - - - - - - - - - - - - - - - - - - - - - - --> 
       </section>
     </section>
 
     <section title="Applicability">
       <section title="Recursive Route Lookups">
         <!-- XXX V - - - - - - - - - - - - - - - - - - - - - - - - - - - - --> 
-        <t>TBD</t>
+        <t>TBD, multiple possible approaches:</t>
         <t><list style="hanging">
           <t>variant 1: ignore dst-src routes, only use routes with src ::/0</t>
-          <t>variant 2a: exact-match src prefixes from resolvee to resolvent (will not work for a lot of cases)</t>
-          <t>variant 2b: longer-match src prefixes from resolvee to resolvent (nexthop src may be superset of looked-up route)</t>
-          <t>variant 3: create multiple instances of the route whose nexthop is resolved,
+          <t>variant 2: exact-match src prefixes from resolvee to resolvent (will not work for a lot of cases)</t>
+          <t>variant 3: longer-match src prefixes from resolvee to resolvent (nexthop src may be superset of looked-up route)</t>
+          <t>variant 4: create multiple instances of the route whose nexthop is resolved,
             with different source prefixes</t>
         </list></t>
         <!-- XXX A - - - - - - - - - - - - - - - - - - - - - - - - - - - - --> 
+        <t>(Variant 4:)</t>
+        <t>When doing recursive nexthop resolution, the route that is being
+          resolved is installed in potentially multiple copies, inheriting all
+          possible more-specific routes that match the nexthop as
+          destination.  The algorithm to do this is:</t>
+        <t><list style="numbers">
+            <t>form the set of attributes for lookup by using the (unresolved,
+              recursive) nexthop as destination (with full host prefix length,
+              i.e. /128), copy all other attributes from the original route</t>
+            <t>find all routes that overlap with this set of attributes
+              (including both more-specific and less-specific routes)</t>
+            <t>order the result from most to less specific</t>
+            <t>for each route, install a route using the original route's
+              destination and the "logical and" overlap of each extra match
+              attribute with same attribute from the set.  Copy nexthop data
+              from the route under iteration.  Then, reduce the set of extra
+              attributes by what was covered by the route just installed
+              ("logical AND NOT").</t>
+        </list></t>
+        <figure><preamble>Example recursive route resolution</preamble>
+          <artwork>
+route to be resolved:
+2001:db8:1234::/48, source 2001:db8:3456::/48,
+                    recursive nexthop via 2001:db8:abcd::1
+
+routes considered for recursive nexthop:
+::/0,                                              via fe80::1
+2001:db8:abcd::/48,                                via fe80::2
+2001:db8:abcd::/48,   source 2001:db8:3456:3::/64, via fe80::3
+2001:db8:abcd::1/128, source 2001:db8:3456:4::/64, via fe80::4
+
+recursive resolution result:
+2001:db8:1234::/48,   source 2001:db8:3456::/48,   via fe80::2
+2001:db8:1234::/48,   source 2001:db8:3456:3::/64, via fe80::3
+2001:db8:1234::/48,   source 2001:db8:3456:4::/64, via fe80::4
+</artwork>
+        </figure>
       </section>
       <section title="Unicast Reverse Path Filtering">
         <t>Unicast reverse path filtering MUST use dst-src routes analog to its
@@ -193,15 +229,15 @@
 
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t>The base underlying this document was first outlaid by Ole Troan and
-        Lorenzo Colitti in <xref target="homenet-sadr"/> for application in the
+        Lorenzo Colitti in <xref target="I-D.troan-homenet-sadr"/> for application in the
         homenet area.</t>
       <t>This document is largely the result of discussions with Fred Baker and
-        derives from <xref target="isis-dst-src"/>.</t>
+        derives from <xref target="I-D.baker-ipv6-isis-dst-src-routing"/>.</t>
     </section>
 
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
-          <t hangText="Initial Version:">September 2014</t>
+          <t hangText="Initial Version:">October 2014</t>
         </list></t>
     </section>
   </middle>
@@ -210,7 +246,6 @@
     <references title="Normative References">
       <?rfc include="reference.RFC.2119"?>
       <?rfc include="reference.RFC.2460"?>
-      <?rfc include="reference.RFC.2827"?>
 <!-- draft-lamparter-rtgwg-routing-discriminators-00.xml -->
 <reference anchor="extra-qualifiers"><front>
     <title abbrev="Extending IP route lookup">
@@ -231,8 +266,8 @@
     </author>
 
     <date/>
-    <area>Internet Engineering Task Force</area>
-    <workgroup><!-- rtgwg --></workgroup>
+    <area>Routing</area>
+    <workgroup>rtgwg</workgroup>
 
     <abstract>
       <t>This document describes the behaviour of a routing system that
@@ -246,83 +281,10 @@
     </references>
 
     <references title="Informative References">
-<!-- draft-troan-homenet-sadr-01 -->
-<reference anchor="homenet-sadr"><front>
-    <title abbrev="IPv6 Multihoming with Source Address Dependent Routing (SADR)">
-      IPv6 Multihoming with Source Address Dependent Routing (SADR)</title>
-
-    <author fullname="Ole Troan" initials="O." surname="Troan">
-      <organization>Cisco Systems</organization>
-      <address>
-        <email>ot@cisco.com</email>
-      </address>
-    </author>
-    <author fullname="Lorenzo Colitti" initials="L." surname="Colitti">
-      <organization>Google</organization>
-      <address>
-        <email>lorenzo@google.com</email>
-      </address>
-    </author>
-
-    <date/>
-    <area>Internet Engineering Task Force</area>
-    <workgroup/>
-
-    <abstract>
-      <t>This note describes the changes necessary for IS-IS to route IPv6
-      traffic from a specified prefix to a specified prefix.</t>
-    </abstract>
-  </front>
-
-  </reference>
-<!-- draft-baker-ipv6-isis-dst-src-routing-02.xml -->
-<!-- draft-baker-ipv6-isis-dst-src-routing-02.xml -->
-<reference anchor="isis-dst-src"><front>
-    <title abbrev="IS-IS Source/Destination Routing">IPv6 Source/Destination
-    Routing using IS-IS</title>
-
-    <author fullname="Fred Baker" initials="F.J." surname="Baker">
-      <organization>Cisco Systems</organization>
-
-      <address>
-        <postal>
-          <street/>
-          <city>Santa Barbara</city>
-          <code>93117</code>
-          <region>California</region>
-          <country>USA</country>
-        </postal>
-
-        <email>fred@cisco.com</email>
-      </address>
-    </author>
-
-    <author fullname="David Lamparter" initials="D." surname="Lamparter">
-      <organization>NetDEF</organization>
-      <address>
-        <postal>
-          <street/>
-          <city>Leipzig</city>
-          <code>04103</code>
-          <region/>
-          <country>Germany</country>
-        </postal>
-        <email>david@opensourcerouting.org</email>
-      </address>
-    </author>
-
-    <date/>
-    <area>Internet Engineering Task Force</area>
-    <workgroup/>
-
-    <abstract>
-      <t>This note describes the changes necessary for IS-IS to route IPv6
-      traffic from a specified prefix to a specified prefix.</t>
-    </abstract>
-  </front>
-
-  </reference>
-<!-- draft-baker-ipv6-isis-dst-src-routing-02.xml -->
+      <?rfc include="reference.RFC.2827"?>
+      <?rfc include="reference.I-D.sarikaya-6man-sadr-overview"?>
+      <?rfc include="reference.I-D.troan-homenet-sadr"?>
+      <?rfc include="reference.I-D.baker-ipv6-isis-dst-src-routing"?>
     </references>
   </back>
 </rfc>

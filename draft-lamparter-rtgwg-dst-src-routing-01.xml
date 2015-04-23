@@ -38,7 +38,7 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-lamparter-rtgwg-dst-src-routing-00"
+<rfc category="std" docName="draft-lamparter-rtgwg-dst-src-routing-01"
      ipr="trust200902">
   <front>
     <title abbrev="Destination/Source Routing">
@@ -64,9 +64,9 @@
 
     <abstract>
       <t>This note specifies using packets' source addresses in route lookups
-        as additional qualifier per <xref target="extra-qualifiers"/>, as
-        applicable to <xref target="RFC2460">IPv6</xref> without specific
-        considerations for any routing protocol.
+        as additional qualifier to be used in route lookup.  This applies to
+        <xref target="RFC2460">IPv6</xref> in general with specific
+        considerations for routing protocol left for separate documents.
       </t>
     </abstract>
   </front>
@@ -111,8 +111,10 @@
         and matched.</t>
 
       <section title="Lookup ordering and disambiguation">
-        <t>As outlined in <xref target="extra-qualifiers"/>, there is a fixed
-          longest-match ordering dor route lookup.</t>
+        <t>Adding further criteria to be looked up when forwarding packets on
+          a hop-by-hop basis has the very fundamental requirement that all
+          routers behave the same way in choosing the most specific route when
+          there are multiple eligible routes.</t>
         <t>For longest-match lookups, the source prefix is matched after the
           destination prefix.  This is to say, first the longest matching
           destination prefix is found, then the table is searched for the route
@@ -123,10 +125,35 @@
         <t>A router MUST continue to a less specific destination prefix if no
           route matches on the source prefix.  It MUST NOT terminate lookup
           on such an event.</t>
+        <t>Using A &lt; B to mean "A is more specific than B", this is
+          represented as:</t>
+        <figure><artwork><![CDATA[
+A < B :=    Adst <  Bdst
+        || (Adst == Bdst && Asrc < Bsrc)
+]]>
+</artwork>
+        </figure>
+      </section>
+
+      <section title="Ordering Rationale">
+        <t>The ordering described by this document (destination before source)
+          could as well be reversed, which would lead to semantically different
+          behavior.</t>
+        <t>Choosing destination to be evaluated first caters to the assumption
+          that local networks should have full, contiguous connectivity to each
+          other.  This implies that those specific local routes always match
+          first based on destination, and use a zero ("all sources") source
+          prefix.</t>
+        <t>If the source prefix were to be matched first, this would result in
+          a less specific (e.g. default) route with a source prefix to match
+          before those local routes.  In other terms, this would essentially
+          divide local connectivity into zones based on source prefix, which
+          is not the intention of this document.</t>
+        <t>Hence, this document describes destination-first lookup.</t>
       </section>
     </section>
 
-    <section title="Applicability">
+    <section title="Applicability To Specific Situations">
       <section title="Recursive Route Lookups">
         <!-- XXX V - - - - - - - - - - - - - - - - - - - - - - - - - - - - --> 
         <t>TBD, multiple possible approaches:</t>
@@ -192,15 +219,41 @@ recursive resolution result:
       </section>
     </section>
 
+      <section title="Interoperability">
+        <t>Since a router implementing source/destination routing can have
+          additional, more specific routes than one that doesn't implement
+          source/destination routing, persistent loops can form between these
+          systems.  To prevent this from happening, a simple rule must be
+          followed:</t>
+        <t>The set of qualifiers used to route a particular packet MUST be a
+          subset of the qualifiers supported by the next hop.</t>
+        <t>This means in particular that a router using the source address as
+          extra qualifier MUST NOT route packets based on a source/destination
+          route to a system that doesn't support source/destination routes (and
+          hence doesn't understand the route).</t>
+        <t>There are 3 possible approaches to avoid such a condition:</t>
+        <t><list style="numbers">
+            <t>discard the packet (treat as destination unreachable)</t>
+            <t>calculate an alternate topology including only routers that
+              support qualifier A</t>
+            <t>if the lookup returns the same nexthop without using qualifier
+              A, use that result (i.e., the nexthop is known to correctly route
+              the packet)</t>
+        </list></t>
+        <t>Above considerations require under all circumstances a knowledge of
+          the next router's capabilities.  For routing protocols based on
+          hop-by-hop flooding (RIP <xref target="RFC2080" />, BGP <xref
+            target="RFC4271" />), knowing the peer's capabilities - or simply
+          relying on systems to only flood what they understand - is
+          sufficient.  Protocols building a link-state database (OSPF <xref
+            target="RFC5340" />, IS-IS <xref target="RFC5308" />) have the
+          additional opportunity to calculate alternate paths based on
+          knowledge of the entire domain, but cannot rely on routers flooding
+          only link state they support themselves.</t>
+      </section>
+
     <section anchor="IANA" title="IANA Considerations">
-      <t>This document updates the "Routing Qualifier Registry" described in
-        <xref target="extra-qualifiers"/>.  The following entry is added:</t>
-      <t><list style="hanging">
-        <t>Name: IPv6 Source Address</t>
-        <t>Applicable Protocols: IPv6</t>
-        <t>Reference: this document</t>
-        <t>Position: after IPv6 Destination Address, before end of list</t>
-      </list></t>
+      <t>This document makes no requests to IANA.</t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
@@ -237,6 +290,8 @@ recursive resolution result:
 
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
+          <t hangText="Initial Version:">April 2015: merged
+            routing-extra-qualifiers draft, new ordering rationale section</t>
           <t hangText="Initial Version:">October 2014</t>
         </list></t>
     </section>
@@ -246,42 +301,14 @@ recursive resolution result:
     <references title="Normative References">
       <?rfc include="reference.RFC.2119"?>
       <?rfc include="reference.RFC.2460"?>
-<!-- draft-lamparter-rtgwg-routing-discriminators-00.xml -->
-<reference anchor="extra-qualifiers"><front>
-    <title abbrev="Extending IP route lookup">
-      Considerations and Registry for extending IP route lookup</title>
-
-    <author fullname="David Lamparter" initials="D." surname="Lamparter">
-      <organization>NetDEF</organization>
-      <address>
-        <postal>
-          <street/>
-          <city>Leipzig</city>
-          <code>04103</code>
-          <region/>
-          <country>Germany</country>
-        </postal>
-        <email>david@opensourcerouting.org</email>
-      </address>
-    </author>
-
-    <date/>
-    <area>Routing</area>
-    <workgroup>rtgwg</workgroup>
-
-    <abstract>
-      <t>This document describes the behaviour of a routing system that
-        takes additional specifications on routes--extra qualifiers--into
-        account, augmenting longest match behaviour.</t>
-    </abstract>
-  </front>
-
-  </reference>
-<!-- draft-lamparter-rtgwg-routing-discriminators-00.xml -->
     </references>
 
     <references title="Informative References">
+      <?rfc include="reference.RFC.2080"?>
       <?rfc include="reference.RFC.2827"?>
+      <?rfc include="reference.RFC.4271"?>
+      <?rfc include="reference.RFC.5308"?>
+      <?rfc include="reference.RFC.5340"?>
       <?rfc include="reference.I-D.sarikaya-6man-sadr-overview"?>
       <?rfc include="reference.I-D.troan-homenet-sadr"?>
       <?rfc include="reference.I-D.baker-ipv6-isis-dst-src-routing"?>

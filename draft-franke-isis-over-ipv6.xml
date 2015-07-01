@@ -39,9 +39,9 @@
 
     <date month="May" year="2015" />
 
-    <area>General</area>
+    <area>Routing</area>
 
-    <workgroup>Internet Engineering Task Force</workgroup>
+    <workgroup>ISIS</workgroup>
     <keyword>IS-IS IPv6</keyword>
 
     <abstract>
@@ -88,25 +88,25 @@
           link-local address of the outgoing interface.
         </t>
         <t>
-          For destination addresses, IPv6 link-local multicast is used. Currently,
-          we use the following addresses until addresses are allocated by IANA for
-          this application:
-          <list>
-            <t>ALL-L1-IS: ff02::db8:1515:1</t>
-            <t>ALL-L2-IS: ff02::db8:1515:2</t>
-          </list>
+          IPv6 link-local multicast is used as destination for the packets. The PDUs
+          that would be sent to ALL-L1-IS when sending them directly on top of the
+          link-layer MUST be sent to the IPv6 multicast group &lt;TBD&gt; instead.
+
+          Respectively, PDUs that would be sent to ALL-L2-IS MUST be sent to the multicast
+          group &lt;TBD&gt;.
         </t>
       </section>
       <section title="IPv6 header">
         <t>
-          The packets should be transmitted with type of service set to Internetwork control.
+          The packets SHOULD be transmitted with type of service set to Internetwork control.
         </t>
       </section>
       <section title="Packet format">
         <t>
           To transmit IS-IS PDUs over IPv6, they are encapsulated as IPv6
           payload without any transport layer protocol. For that purpose,
-          protocol number 124 as assigned by IANA is used.
+          protocol number 124 is used. That number was assigned by IANA for
+          IS-IS over IPv4. <xref target="I-D.ietf-isis-wg-over-ip-02" />
           The PDUs are transmitted as IPv6 payload starting at the NLPI.
         </t>
       </section>
@@ -118,7 +118,7 @@
           the goal of this document is to become independent from specific link-layer properties.
         </t>
         <t>
-          While the IS-IS over IPv4 draft constructs the SNPA by padding the IPv4 addres, we are
+          While the IS-IS over IPv4 draft constructs the SNPA by padding the IPv4 address, we are
           facing the issue that an IPv6 address will not fit into a standard sized SNPA.
         </t>
         <t>
@@ -138,11 +138,6 @@
       </section>
     </section>
     <section anchor="Acknowledgements" title="Acknowledgements">
-      <t>This template was derived from an initial version written by Pekka
-      Savola and contributed by him to the xml2rfc project.</t>
-
-      <t>This document is part of a plan to make xml2rfc indispensable <xref
-      target="DOMINATION"></xref>.</t>
     </section>
 
     <!-- Possibly a 'Contributors' section ... -->

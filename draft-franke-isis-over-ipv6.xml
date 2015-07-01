@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="US-ASCII"?>
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
 <!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
-<!ENTITY RFC2629 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2629.xml">
+<!ENTITY RFC3307 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3307.xml">
 <!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
-<!ENTITY I-D.narten-iana-considerations-rfc2434bis SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.narten-iana-considerations-rfc2434bis.xml">
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <?rfc strict="yes" ?>
@@ -59,7 +58,7 @@
   <middle>
     <section title="Introduction">
       <t>
-        The original specification of IS-IS specifies that PDUs are transmitted
+	      The original specification of IS-IS <xref target="ISO.10589.2002"/> defines that PDUs are transmitted
         directly on the link-layer. With this design comes the problem that
         specification work is required each time a new link-layer should be
         supported by IS-IS.
@@ -106,7 +105,7 @@
           To transmit IS-IS PDUs over IPv6, they are encapsulated as IPv6
           payload without any transport layer protocol. For that purpose,
           protocol number 124 is used. That number was assigned by IANA for
-          IS-IS over IPv4. <xref target="I-D.ietf-isis-wg-over-ip-02" />
+          IS-IS over IPv4. <xref target="I-D.ietf-isis-wg-over-ip" />
           The PDUs are transmitted as IPv6 payload starting at the NLPI.
         </t>
       </section>
@@ -114,43 +113,61 @@
     <section title="Considerations for using IS-IS over IPv6">
       <section title="SNPA">
         <t>
-          Using the ethernet MAC address as SNPA is not practical for this application since
-          the goal of this document is to become independent from specific link-layer properties.
+          Using the ethernet MAC address as SNPA on LAN links is not practical for this
+          application since the goal of this extension is to become independent from specific link-layer properties.
         </t>
         <t>
           While the IS-IS over IPv4 draft constructs the SNPA by padding the IPv4 address, we are
           facing the issue that an IPv6 address will not fit into a standard sized SNPA.
         </t>
         <t>
-          Currently, we convert the 64-bit interface identifier of the IPv6 link-local
+          There are multiple options to address this, so this is still TBD.
+        </t>
+        <t>
+          Option a) Treat the whole 16 byte of the IPv6 address as SNPA. Since the SNPA is only used internally
+          to each router and put into any IS-IS PDUs, no protocol datastructures need to be modified for this,
+          but implemenations need to deal with this new SNPA length internally.
+        </t>
+        <t>
+          Option b) Convert the 64-bit interface identifier of the IPv6 link-local
           address of nodes back to an EUI48 format by using bytes 8 through 10 and bytes
           13 through 15 of a nodes IPv6 address and flipping bit 0x02 in the first byte.
         </t>
         <t>
-          This is not an ideal solution and better proposals will be happily considered.
+          This is not an ideal solution since SNPA conflicts may arrise on link layers that
+          use other methods for generation of interface identifiers or for manually configured
+          addresses.
         </t>
       </section>
       <section title="MTU">
         <t>All transmitted IPv6 packets should have a maximum size of 1280 bytes. This allows for
            the protocol to run on any link supporting IPv6. Fragmentation should not be used, therefore
            the lsp-mtu may have to be adjusted for the LSPs to fit into 1280 byte packets.</t>
-        <t>Hello PDUs should be padded to 1280 bytes</t>
+        <t>Hello PDUs should be padded to 1280 bytes.</t>
       </section>
     </section>
     <section anchor="Acknowledgements" title="Acknowledgements">
+	    <t>There has been previous work to specify operation of IS-IS over IPv4  <xref target="I-D.ietf-isis-wg-over-ip" />
+      which has been used as a reference for this work.</t>
+
     </section>
 
     <!-- Possibly a 'Contributors' section ... -->
 
     <section anchor="IANA" title="IANA Considerations">
-      <t>For this document, IANA should assign two IPv6 link-local multicast groups
-        for use as ALL-L1-IS and ALL-L2-IS group.<!-- RFC2434 -->
-     </t>
+      <t>For this protocol, IANA should assign two IPv6 multicast group IDs in the IPv6 Multicast
+        Address Space Registry. <xref target="RFC3307"/>
+      </t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
-      <t>All drafts are required to have a security considerations section.
-      See <xref target="RFC3552">RFC 3552</xref> for a guide.</t>
+      <t>Routers implementing this encapsulation of IS-IS over IPv6 can be succeptible
+      to receiving and processing IS-IS over IPv6 packets that have not been originated
+      by a router that is on-link. For example, someone with malicious intent coult send
+      IS-IS over IPv6 packets to a global unicast address of a router via multiple hops.
+    </t>
+    <t>For this reason, routers implementing IS-IS over IPv6 should verify that both source
+      and destination of received packets are link-local.</t>
     </section>
   </middle>
 
@@ -173,31 +190,23 @@
     <references title="Normative References">
       <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
       &RFC2119;
-
-      <reference anchor="min_ref">
-        <!-- the following is the minimum to make xml2rfc happy -->
-
-        <front>
-          <title>Minimal Reference</title>
-
-          <author initials="authInitials" surname="authSurName">
-            <organization></organization>
-          </author>
-
-          <date year="2015" />
-        </front>
-      </reference>
     </references>
 
     <references title="Informative References">
       <!-- Here we use entities that we defined at the beginning. -->
 
-      &RFC2629;
+      <reference anchor='ISO.10589.2002'>
+        <front>
+          <title>Intermediate system to intermediate system intra-domain-routing routine information exchange protocol for use in conjunction with the protocol for providing the connectionless-mode Network Service (ISO 8473)</title>
+          <author>
+            <organization>International Organization for Standardization</organization>
+          </author>
+          <date month="" year="2002" />
+        </front>
+        <seriesInfo name="ISO" value="Standard 10589" />
+      </reference>
 
-      &RFC3552;
-
-      &I-D.narten-iana-considerations-rfc2434bis;
-
+      &RFC3307;
 
       <reference anchor='I-D.ietf-isis-wg-over-ip'>
         <front>
@@ -219,42 +228,6 @@
         <format type='TXT'
           target='https://tools.ietf.org/id/draft-ietf-isis-wg-over-ip-02.txt' />
       </reference>
-
-      <!-- A reference written by by an organization not a person. -->
-
-      <reference anchor="DOMINATION"
-                 target="http://www.example.com/dominator.html">
-        <front>
-          <title>Ultimate Plan for Taking Over the World</title>
-
-          <author>
-            <organization>Mad Dominators, Inc.</organization>
-          </author>
-
-          <date year="1984" />
-        </front>
-      </reference>
     </references>
-
-    <section anchor="app-additional" title="Additional Stuff">
-      <t>This becomes an Appendix.</t>
-    </section>
-
-    <!-- Change Log
-
-v00 2006-03-15  EBD   Initial version
-
-v01 2006-04-03  EBD   Moved PI location back to position 1 -
-                      v3.1 of XMLmind is better with them at this location.
-v02 2007-03-07  AH    removed extraneous nested_list attribute,
-                      other minor corrections
-v03 2007-03-09  EBD   Added comments on null IANA sections and fixed heading capitalization.
-                      Modified comments around figure to reflect non-implementation of
-                      figure indent control.  Put in reference using anchor="DOMINATION".
-                      Fixed up the date specification comments to reflect current truth.
-v04 2007-03-09 AH     Major changes: shortened discussion of PIs,
-                      added discussion of rfc include.
-v05 2007-03-10 EBD    Added preamble to C program example to tell about ABNF and alternative 
-                      images. Removed meta-characters from comments (causes problems).  -->
   </back>
 </rfc>

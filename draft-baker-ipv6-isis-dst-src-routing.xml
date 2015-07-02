@@ -132,18 +132,18 @@
 -->
 
     <section title="Introduction">
-      <t>This specification builds on <xref target="RFC5308">IS-IS for
-      IPv6</xref> and the critical extension TLV in <xref
-      target="critical-subtlvs"/>.  This note defines the sub-TLV for an
-      <xref target="RFC2460">IPv6</xref> Source Prefix, to define routes from
-      a source prefix to a destination prefix.</t>
+      <t>This specification defines how to handle <xref
+          target="I-D.lamparter-rtgwg-dst-src-routing">destination/source
+          routing</xref> information in <xref target="RFC5308">IS-IS for
+          IPv6</xref> routing environments.  To this extent, a new sub-TLV for
+        an <xref target="RFC2460">IPv6</xref> Source Prefix is added, and 
+        <xref target="RFC5120">Multi Topology Routing</xref> is employed to
+        address compatibility and isolation concerns.</t>
 
-      <t>This implements the Destination/Source Routing mechanism described
-        in <xref target="dst-src-routing"/>.
+      <t>The router MUST implement the Destination/Source Routing mechanism
+      described in <xref target="I-D.lamparter-rtgwg-dst-src-routing"/>.
       This implies not simply routing "to a destination", but routing "to
-      that destination AND from a specified source". It may be combined with
-      other qualifying attributes, such as "traffic going to that destination
-      AND using a specified flow label AND from a specified source prefix".
+      that destination AND from a specified source".
       The obvious application is egress routing, as required for a multihomed
       entity with a provider-allocated prefix from each of several upstream
       networks. Traffic within the network could be source/destination routed
@@ -165,7 +165,7 @@
       </section>
     </section>
 
-    <section anchor="extensions" title="Theory of Routing">
+    <section anchor="routing" title="Theory of Routing">
       <t>Both IS-IS and OSPF perform their calculations by building a lattice
       of routers and links from the router performing the calculation to each
       router, and then use routes (sequences in the lattice) to get to
@@ -193,12 +193,19 @@
       <t>TLVs that lack a source prefix sub-TLV match any source address
       (i.e., the source prefix TLV defaults to ::/0), by definition.</t>
 
-      <t>When resolving Destination/Source Reachabilities, the SPF calculation
-      results used MUST reflect a calculation performed including only routers
-      that advertise support for the critical Source Prefix TLV defined in
-      section 3.  The mechanism for signaling this is described in <xref
-      target="critical-subtlvs"/>.  Routers that support this extension MUST
-      advertise support as described there.</t>
+      <t>To ensure that routers without support for Destination/Source routing
+        are excluded from path calculation for routes with a non-default source
+        prefix, a separate MTID is used to carry Destination/Source routes.  A
+        router MUST NOT participate in a topology with such an MTID unless it
+        implements Destination/Source routing.</t>
+
+      <t>There is a distinct Destination/Source Routing MTID for each of the
+        underlying base topologies the information applies to.  The set of
+        routes propagated towards the forwarding plane is the union of the
+        information in the base topology and the D/S Routing MTID.  Incoming
+        connectivity information with a default or non-present source prefix
+        is advertised in the base topology, routes with non-default source
+        prefix are advertised in the D/S Routing MTID.</t>
 
       <?rfc needLines="5" ?>
 
@@ -257,67 +264,69 @@
 
       <?rfc needLines="5" ?>
 
-      <section title="Interactions with other constraints">
-        <t>In the event that there are other constraints on routing, such as
-        proposed in <xref
-        target="I-D.baker-ipv6-isis-dst-flowlabel-routing"/>, the effect is a
-        logical AND. The FIB lookup must yield the route with the longest
-        matching destination prefix that also matches each of the
-        constraints.  The general mechanics for this are described in <xref
-          target="extra-qualifiers"/>.</t>
-      </section>
-
       <section title="Multi-topology Routing">
-        <t>While not mandatory, IS-IS is often implemented as <xref
-        target="RFC5120">Multi Topology Routing</xref> with IPv4 or other
-        protocols in the same or different topologies.  The TLV structure in
-        <xref target="critical-subtlvs"/> is topology-agnostic in that it
-        always includes the topology ID, which may be zero to indicate the
-        default topology.</t>
-
-        <t>The mechanism in this document and its Sub-TLV are applicable to
-        any topology that carries routing information used for IPv6 Unicast
-        routing.  Destination/Source reachability information SHOULD NOT
-        be placed differently from "plain" destination reachabilities.</t>
-
-        <t>A system MUST NOT originate Destination/Source Reachabilities in
-        a topology that is exclusively configured for multicast RPF operation.
-        If a topology is shared between unicast lookups and multicast
-        reverse path lookups, reachabilities with a source prefix other than
-        ::/0 MUST be ignored for multicast reverse path lookups.</t>
-
-        <t>The statements in the previous two paragraphs currently result in
-        applicability of Destination/Source routes as:</t>
-        <figure title="Applicability of Destination/Source IPv6 Reachabilities">
+        <t>As outlined in <xref target="routing"/>, this document specifies the
+          use of separate topologies for <xref target="RFC5120">Multi Topology
+            Routing</xref> to carry Destination/Source routing information.
+          These topologies form pairs with a base topology each as follows:</t>
+        <figure title="Destination/Source Routing MTIDs">
           <artwork align="left"><![CDATA[
-MT-ID   designated usage   applicability
-0       default topology   yes
-1       IPv4 management    no
-2       IPv6 default       yes
-3       IPv4 multicast     no
-4       IPv6 multicast     no
-5       IPv6 management    yes
-]]></artwork>
-        </figure>
+base               base    D/S
+designated usage   MTID    MTID
+----------------------------------
+default topology   0       TBD-MT0
+IPv4 management    1       n/a
+IPv6 default       2       TBD-MT2
+IPv4 multicast     3       n/a
+IPv6 multicast     4       n/a
+IPv6 management    5       TBD-MT5
+]]></artwork></figure>
+
+        <t>The rationale for in-/excluding base MTIDs to provide a D/S MTID for
+          is as follows:</t>
+        <t><list style="hanging">
+            <t hangText="MTID 0:">The base (non-MTR) topology in some
+              installations carries all routing information, including IPv6
+              reachabilities.  In such a setup, the topology with MTID TBD-MT0
+              is used to carry associated D/S reachabilities.
+            </t>
+            <t hangText="MTIDs 1 and 3:">Topologies with MTID 1 and 4 carry
+              exclusively IPv4 reachabilities.  Thus, no IPv6 D/S topology is
+              created to associate with them.</t>
+            <t hangText="MTID 2:">The topology with MTID 2 carries IPv6
+              reachabilities in common M-ISIS setups.  (MTID 0 in such cases
+              carries exclusively IPv4 reachability information.)  Associated
+              IPv6 D/S reachabilities MUST be carried in MTID TBD-MT2.</t>
+            <t hangText="MTID 4:">MTID 4, while carrying IPv6 connectivity
+              information, is used for multicast RPF lookups.  Since
+              Destination/Source routing is not compatible with multicast
+              RPF lookups, no associated D/S MTID is defined for IS-IS.</t>
+            <t hangText="MTID 5:">An alternate management/administration
+              topology may carry its routing information in MTID 5.
+              Destination/Source routing is applicable to this and MUST use
+              MTID TBD-MT5 to carry associated reachability TLVs.</t>
+        </list></t>
+
+        <t>It should be noted that implementing M-ISIS is thus a prerequirement
+          for supporting the protocol outlined in this document.  Even
+          installations that previously used only MTID 0 (i.e. no M-ISIS) will
+          need to start using MTID TBD-MT0.</t>
       </section>
     </section>
 
-    <section anchor="IS-IS-extensions-ipv6"
-             title="Extensions necessary for IPv6 Source/Destination Routing in IS-IS">
-      <t>Section 2 of <xref target="RFC5308"/> defines the "IPv6 Reachability
-      TLV", and carries in it destination prefix advertisements. It has the
-      capability of extension, using sub-TLVs.</t>
-
-      <t>We define the Source Prefix Sub-TLV as in <xref
-      target="IS-IS-source"/>. As noted in <xref target="extensions"/>, any
-      IPv6 Reachability TLV that does not specify a source prefix is
-      understood to as specifying ::/0 (any IPv6 address) as the source
-      prefix.</t>
+    <section anchor="new-tlvs"
+             title="Protocol encoding for IPv6 Source Prefix information">
+      <t>Destination/Source reachabilities are originated using TLV 237, using
+        an additional sub-TLV to carry the source prefix as follows.</t>
+               
+      <t>As noted in <xref target="routing"/>, any IPv6 Reachability TLV that
+        does not specify a source prefix is functionally identical to
+        specifying ::/0 as the source prefix.  Such routes SHOULD NOT be
+        originated into the D/S MTID, but rather into the base MTID.</t>
 
       <section anchor="IS-IS-source" title="Source Prefix sub-TLV">
         <?rfc needLines="10"?>
-        <t>The following Sub-TLV is defined for the critical part of TLV
-          TBD2 defined in <xref target="critical-subtlvs"/>:</t>
+        <t>The following Sub-TLV is defined for TLV 237:</t>
 
         <figure title="Source Prefix Sub-TLV">
           <artwork align="center"><![CDATA[
@@ -330,7 +339,7 @@ MT-ID   designated usage   applicability
         </figure>
 
         <t><list style="hanging">
-            <t hangText="Source Prefix Type:">assigned by IANA</t>
+            <t hangText="Source Prefix Type:">TBD-TLV (assigned by IANA)</t>
 
             <t hangText="TLV Length:">Length of the sub-TLV in octets</t>
 
@@ -343,26 +352,38 @@ MT-ID   designated usage   applicability
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
-      <t>The "Sub-TLVs for TLVs TBD1 (critical) and TBD2 (critical)" registry
-        defined in <xref target="critical-subtlvs"/> is extended by the
-        following element:</t>
+      <t>IANA is requested to allocate Values from the "IS-IS Multi-Topology ID Values" registry as follows:</t>
       <t><list style="hanging">
-          <t hangText="Source Prefix Type:">assigned by IANA</t>
-          <t hangText="Description:">IPv6 Source Prefix</t>
-          <t hangText="Applicable to TLV TBD1 (IPv4):">No</t>
-          <t hangText="Applicable to TLV TBD2 (IPv6):">Yes</t>
-        </list></t>
+          <t hangText="TBD-MT0:">IPv6 Dest/Source routing corresponding to topology 0</t>
+          <t hangText="TBD-MT2:">Reserved for IPv6 Dest/Source routing corresponding to topology 2</t>
+          <t hangText="TBD-MT5:">Reserved for IPv6 Dest/Source routing corresponding to topology 5</t>
+      </list></t>
+      <t>Additionally, IANA is requested to allocate an IS-IS codepoint from
+        the "Sub-TLVs for TLVs 135, 235, 236, and 237" registry:</t>
+      <t><list style="hanging">
+          <t hangText="Type:">TBD-TLV</t>
+          <t hangText="Description:">IPv6 SADR Source Prefix</t>
+          <t hangText="Applicable to TLV 237:">Yes</t>
+          <t hangText="Applicable to TLVs 135, 235, 236:">No</t>
+      </list></t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
-      <t>There are no security considerations specific to this document.
-        However, the considerations from <xref target="dst-src-routing"/> and
-        <xref target="critical-subtlvs"/> are particularly relevant to this
-        document.</t>
+      <t>The same injection and resource exhaustion attack scenarios as with
+        all routing protocols apply.</t>
+      <t>Security considerations from <xref
+          target="I-D.lamparter-rtgwg-dst-src-routing"/> are particularly
+        relevant to this document, in particular the possibility to inject
+        (more) specific routes to hijack traffic.</t>
+    </section>
+
+    <section anchor="Privacy" title="Privacy Considerations">
+      <t>No privacy considerations apply to this document, as it only specifies
+        routing control plane information.</t>
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
-      <t/>
+      <t>(TODO)</t>
     </section>
   </middle>
 
@@ -393,110 +414,7 @@ MT-ID   designated usage   applicability
 
       <?rfc include="reference.RFC.5308" ?>
 
-<!-- draft-lamparter-rtgwg-routing-discriminators-00.xml -->
-<reference anchor="extra-qualifiers"><front>
-    <title abbrev="Extending IP route lookup">
-      Considerations and Registry for extending IP route lookup</title>
-
-    <author fullname="David Lamparter" initials="D." surname="Lamparter">
-      <organization>NetDEF</organization>
-      <address>
-        <postal>
-          <street/>
-          <city>Leipzig</city>
-          <code>04103</code>
-          <region/>
-          <country>Germany</country>
-        </postal>
-        <email>david@opensourcerouting.org</email>
-      </address>
-    </author>
-
-    <date year="2014" month="October"/>
-    <area>Routing</area>
-    <workgroup>rtgwg</workgroup>
-
-    <abstract>
-      <t>This document describes the behaviour of a routing system that
-        takes additional specifications on routes--extra qualifiers--into
-        account, augmenting longest match behaviour.</t>
-    </abstract>
-  </front>
-
-    <seriesInfo name='Internet-Draft' value='draft-lamparter-rtgwg-routing-discriminators-00' />
-  </reference>
-<!-- draft-lamparter-rtgwg-routing-discriminators-00.xml -->
-<!-- draft-lamparter-rtgwg-dst-src-routing-00.xml -->
-<reference anchor="dst-src-routing"><front>
-    <title abbrev="Destination/Source Routing">
-      Destination/Source Routing</title>
-
-    <author fullname="David Lamparter" initials="D." surname="Lamparter">
-      <organization>NetDEF</organization>
-      <address>
-        <postal>
-          <street/>
-          <city>Leipzig</city>
-          <code>04103</code>
-          <region/>
-          <country>Germany</country>
-        </postal>
-        <email>david@opensourcerouting.org</email>
-      </address>
-    </author>
-
-    <date year="2014" month="October"/>
-    <area>Routing</area>
-    <workgroup>rtgwg</workgroup>
-
-    <abstract>
-      <t>This note specifies using packets' source addresses in route lookups
-        as additional qualifier per <xref target="extra-qualifiers"/>, as
-        applicable to <xref target="RFC2460">IPv6</xref> without specific
-        considerations for any routing protocol.
-      </t>
-    </abstract>
-  </front>
-
-    <seriesInfo name='Internet-Draft' value='draft-lamparter-rtgwg-dst-src-routing-00'/>
-  </reference>
-<!-- draft-lamparter-rtgwg-dst-src-routing-00.xml -->
-<!-- draft-lamparter-isis-reachability-critical-subtlvs.xml -->
-<reference anchor="critical-subtlvs"><front>
-    <title abbrev="IS-IS Reachability with critical Sub-TLVs">
-      IS-IS Reachability with critical Sub-TLVs</title>
-
-    <author fullname="David Lamparter" initials="D." surname="Lamparter">
-      <organization>NetDEF</organization>
-      <address>
-        <postal>
-          <street/>
-          <city>Leipzig</city>
-          <code>04103</code>
-          <region/>
-          <country>Germany</country>
-        </postal>
-        <email>david@opensourcerouting.org</email>
-      </address>
-    </author>
-
-    <date year="2014" month="October"/>
-    <area>Routing</area>
-    <workgroup>isis</workgroup>
-
-    <abstract>
-      <t>While previously existing TLVs for IP Reachability extensibly support
-        Sub-TLVs, these cannot be marked as critical.  This is required for
-        extending router behaviour with additional qualifiers on routes, hence
-        this document introduces new Reachability TLVs that support critical
-        Sub-TLVs.</t>
-    </abstract>
-  </front>
-
-    <seriesInfo name='Internet-Draft' value='draft-lamparter-isis-reachability-critical-subtlvs-00'/>
-  </reference>
-<!-- draft-lamparter-isis-reachability-critical-subtlvs.xml -->
-
+      <?rfc include="reference.I-D.lamparter-rtgwg-dst-src-routing"?>
     </references>
 
     <references title="Informative References">
@@ -513,6 +431,7 @@ MT-ID   designated usage   applicability
           <t hangText="Added MTR:">August 2014</t>
 
           <t hangText="Split into 4 drafts:">October 2014</t>
+          <t hangText="Dropped 'Critical Sub-TLV' drafts">June 2015</t>
         </list></t>
     </section>
   </back>

@@ -88,49 +88,9 @@
       <t>This note describes the changes necessary for IS-IS to route IPv6
       traffic from a specified prefix to a specified prefix.</t>
     </abstract>
-
-    <!--		
-		<note title="Foreword">
-		</note>
-		-->
-
-    <!--
-      <?rfc needLines="10" ?>
-      <texttable anchor="table_example" title="A Very Simple Table">
-      <preamble>Tables use ttcol to define column headers and widths.
-      Every cell then has a &quot;c&quot; element for its content.</preamble>
-          <ttcol align="center">ttcol #1</ttcol>
-                                    <ttcol align="center">ttcol #2</ttcol>
-                      <c>c #1</c>		<c>c #2</c>
-                      <c>c #3</c>		<c>c #4</c>
-                      <c>c #5</c>		<c>c #6</c>
-      <postamble>which is a very simple example.</postamble>
-      </texttable>
-    -->
   </front>
 
   <middle>
-    <!--		
-      <t>There are multiple list styles: "symbols", "letters", "numbers", 
-"hanging", "format", etc.</t>
-      <t>
-	<list style="symbols">
-	    <t>First bullet</t>
-	    <t>Second bullet</t>
-	</list>
-     </t>
--->
-
-    <!--
-<figure anchor="reference" title="Figure">
-<artwork align="center">
-<![CDATA[
-	ASCII artwork goes here... 
-]]>
-</artwork>
-</figure>
--->
-
     <section title="Introduction">
       <t>This specification defines how to handle <xref
           target="I-D.lamparter-rtgwg-dst-src-routing">destination/source

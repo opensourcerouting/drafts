@@ -2,6 +2,7 @@ DRAFTS=
 DRAFTS+=draft-baker-ipv6-isis-dst-src-routing.xml
 DRAFTS+=draft-lamparter-rtgwg-dst-src-routing.xml
 DRAFTS+=draft-franke-isis-over-ipv6.xml
+DRAFTS+=draft-franke-isis-p2mp.xml
 
 
 .PHONY: love clean

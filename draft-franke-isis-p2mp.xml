@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
+<!ENTITY RFC3307 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3307.xml">
+<!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
+]>
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<?rfc strict="yes" ?>
+<?rfc toc="yes"?>
+<?rfc tocdepth="4"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes" ?>
+<?rfc compact="yes" ?>
+<?rfc subcompact="no" ?>
+<rfc category="std" docName="draft-franke-isis-p2mp" ipr="trust200902">
+  <front>
+    <!-- The abbreviated title is used in the page header - it is only necessary if the 
+         full title is longer than 39 characters -->
+
+    <title abbrev="Point-to-Multipoint for IS-IS">Point-to-Multipoint for IS-IS</title>
+    <author fullname="Christian Franke" initials="C.F."
+            surname="Franke">
+      <organization>NetDEF</organization>
+
+      <address>
+        <postal>
+          <street></street>
+          <!-- Reorder these if your country does things differently -->
+          <code></code>
+          <city>Leipzig</city>
+          <region></region>
+          <country>DE</country>
+        </postal>
+
+        <email>chris@opensourcerouting.org</email>
+      </address>
+    </author>
+
+    <date day="3" month="July" year="2015" />
+
+    <area>Routing</area>
+
+    <workgroup>Network Working Group</workgroup>
+    <keyword>IS-IS Multipoint Multicast</keyword>
+
+    <abstract>
+      <t>
+        This document describes a new mode operation for IS-IS. In addition
+        to the existing LAN and point-to-point mode of operation, a point-to-multipoint
+        mode is defined. This mode is useful for operation both on networks with more than
+        two routers where multicast is expensive in comparison to unicast and on
+        networks where the common methodology of creating a LAN pseudonode cannot adequately
+        reflect metrics.
+      </t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section title="Introduction">
+      <t>
+	      The original specification of IS-IS <xref target="ISO.10589.2002"/> defines that PDUs are transmitted
+        directly on the link-layer. With this design comes the problem that
+        specification work is required each time a new link-layer should be
+        supported by IS-IS.
+        By transmitting IS-IS PDUs as IPv6 packets, this specification work can
+        be avoided and any link-layer supporting IPv6 can be used.
+      </t>
+      <t>
+        This specification does not make changes to the general operation of
+        IS-IS and any existing mechanisms should be kept as-is. The only change
+        made by this draft is the format of IS-IS PDUs on the wire.
+      </t>
+
+      <section title="Requirements Language">
+        <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+        "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this
+        document are to be interpreted as described in <xref
+        target="RFC2119">RFC 2119</xref>.</t>
+      </section>
+    </section>
+
+    <section title="Transmitting IS-IS PDUs over IPv6">
+      <section title="Addressing">
+        <t>
+          Link-local IPv6 addresses are used to transmit and receive IS-IS PDUs.
+          Routers should set the source address of transmitted the PDUs to the
+          link-local address of the outgoing interface.
+        </t>
+        <t>
+          IPv6 link-local multicast is used as destination for the packets. The PDUs
+          that would be sent to ALL-L1-IS when sending them directly on top of the
+          link-layer MUST be sent to the IPv6 multicast group &lt;TBD&gt; instead.
+
+          Respectively, PDUs that would be sent to ALL-L2-IS MUST be sent to the multicast
+          group &lt;TBD&gt;.
+        </t>
+      </section>
+      <section title="IPv6 header">
+        <t>
+          The packets SHOULD be transmitted with type of service set to Internetwork control.
+        </t>
+      </section>
+      <section title="Packet format">
+        <t>
+          To transmit IS-IS PDUs over IPv6, they are encapsulated as IPv6
+          payload without any transport layer protocol. For that purpose,
+          protocol number 124 is used. That number was assigned by IANA for
+          IS-IS over IPv4. <xref target="I-D.ietf-isis-wg-over-ip" />
+          The PDUs are transmitted as IPv6 payload starting at the NLPI.
+        </t>
+      </section>
+    </section>
+    <section title="Considerations for using IS-IS over IPv6">
+      <section title="SNPA">
+        <t>
+          Using the ethernet MAC address as SNPA on LAN links is not practical for this
+          application since the goal of this extension is to become independent from specific link-layer properties.
+        </t>
+        <t>
+          While the IS-IS over IPv4 draft constructs the SNPA by padding the IPv4 address, we are
+          facing the issue that an IPv6 address will not fit into a standard sized SNPA.
+        </t>
+        <t>
+          There are multiple options to address this, so this is still TBD.
+        </t>
+        <t>
+          Option a) Treat the whole 16 byte of the IPv6 address as SNPA. Since the SNPA is only used internally
+          to each router and put into any IS-IS PDUs, no protocol datastructures need to be modified for this,
+          but implemenations need to deal with this new SNPA length internally.
+        </t>
+        <t>
+          Option b) Convert the 64-bit interface identifier of the IPv6 link-local
+          address of nodes back to an EUI48 format by using bytes 8 through 10 and bytes
+          13 through 15 of a nodes IPv6 address and flipping bit 0x02 in the first byte.
+        </t>
+        <t>
+          This is not an ideal solution since SNPA conflicts may arrise on link layers that
+          use other methods for generation of interface identifiers or for manually configured
+          addresses.
+        </t>
+      </section>
+      <section title="MTU">
+        <t>All transmitted IPv6 packets should have a maximum size of 1280 bytes. This allows for
+           the protocol to run on any link supporting IPv6. Fragmentation should not be used, therefore
+           the lsp-mtu may have to be adjusted for the LSPs to fit into 1280 byte packets.</t>
+        <t>Hello PDUs should be padded to 1280 bytes.</t>
+      </section>
+    </section>
+    <section anchor="Acknowledgements" title="Acknowledgements">
+	    <t>There has been previous work to specify operation of IS-IS over IPv4  <xref target="I-D.ietf-isis-wg-over-ip" />
+      which has been used as a reference for this work.</t>
+
+    </section>
+
+    <!-- Possibly a 'Contributors' section ... -->
+
+    <section anchor="IANA" title="IANA Considerations">
+      <t>For this protocol, IANA should assign two IPv6 multicast group IDs in the IPv6 Multicast
+        Address Space Registry. <xref target="RFC3307"/>
+      </t>
+    </section>
+
+    <section anchor="Security" title="Security Considerations">
+      <t>Routers implementing this encapsulation of IS-IS over IPv6 can be succeptible
+      to receiving and processing IS-IS over IPv6 packets that have not been originated
+      by a router that is on-link. For example, someone with malicious intent coult send
+      IS-IS over IPv6 packets to a global unicast address of a router via multiple hops.
+    </t>
+    <t>For this reason, routers implementing IS-IS over IPv6 should verify that both source
+      and destination of received packets are link-local.</t>
+    </section>
+  </middle>
+
+  <!--  *****BACK MATTER ***** -->
+
+  <back>
+    <!-- References split into informative and normative -->
+
+    <!-- There are 2 ways to insert reference entries from the citation libraries:
+     1. define an ENTITY at the top, and use "ampersand character"RFC2629; here (as shown)
+     2. simply use a PI "less than character"?rfc include="reference.RFC.2119.xml"?> here
+        (for I-Ds: include="reference.I-D.narten-iana-considerations-rfc2434bis.xml")
+
+     Both are cited textually in the same manner: by using xref elements.
+     If you use the PI option, xml2rfc will, by default, try to find included files in the same
+     directory as the including file. You can also define the XML_LIBRARY environment variable
+     with a value containing a set of directories to search.  These can be either in the local
+     filing system or remote ones accessed by http (http://domain/dir/... ).-->
+
+    <references title="Normative References">
+      <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
+      &RFC2119;
+    </references>
+
+    <references title="Informative References">
+      <!-- Here we use entities that we defined at the beginning. -->
+
+      <reference anchor='ISO.10589.2002'>
+        <front>
+          <title>Intermediate system to intermediate system intra-domain-routing routine information exchange protocol for use in conjunction with the protocol for providing the connectionless-mode Network Service (ISO 8473)</title>
+          <author>
+            <organization>International Organization for Standardization</organization>
+          </author>
+          <date month="" year="2002" />
+        </front>
+        <seriesInfo name="ISO" value="Standard 10589" />
+      </reference>
+
+      &RFC3307;
+
+      <reference anchor='I-D.ietf-isis-wg-over-ip'>
+        <front>
+          <title>IS-IS over IPv4</title>
+          <author initials='T' surname='Przygienda' fullname='Tony Przygienda'>
+            <organization>Siara Systems</organization>
+          </author>
+          <author initials='A' surname='Patel' fullname='Ajay Patel'>
+            <organization>Siara Systems</organization>
+          </author>
+          <author initials='A' surname='Bansal' fullname='Atul Bansal'>
+            <organization>FORE Systems</organization>
+          </author>
+          <date day="11" month='October' year='1999'/>
+        </front>
+
+
+        <seriesInfo name='Internet-Draft' value='draft-ietf-isis-wg-over-ip-02' />
+        <format type='TXT'
+          target='https://tools.ietf.org/id/draft-ietf-isis-wg-over-ip-02.txt' />
+      </reference>
+    </references>
+  </back>
+</rfc>
+<!-- vim: sw=2 ts=2 et
+-->

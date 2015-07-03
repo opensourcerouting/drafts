@@ -92,7 +92,7 @@
 
   <middle>
     <section title="Introduction">
-      <t>This specification defines how to handle <xref
+      <t>This specification defines how to exchange <xref
           target="I-D.lamparter-rtgwg-dst-src-routing">destination/source
           routing</xref> information in <xref target="RFC5308">IS-IS for
           IPv6</xref> routing environments.  To this extent, a new sub-TLV for
@@ -160,7 +160,7 @@
         implements Destination/Source routing.</t>
 
       <t>There is a distinct Destination/Source Routing MTID for each of the
-        underlying base topologies the information applies to.  The set of
+        underlying base MT topologies the information applies to.  The set of
         routes propagated towards the forwarding plane is the union of the
         information in the base topology and the D/S Routing MTID.  Incoming
         connectivity information with a default or non-present source prefix
@@ -250,7 +250,7 @@ IPv6 management    5       TBD-MT5
               reachabilities.  In such a setup, the topology with MTID TBD-MT0
               is used to carry associated D/S reachabilities.
             </t>
-            <t hangText="MTIDs 1 and 3:">Topologies with MTID 1 and 4 carry
+            <t hangText="MTIDs 1 and 3:">Topologies with MTID 1 and 3 carry
               exclusively IPv4 reachabilities.  Thus, no IPv6 D/S topology is
               created to associate with them.</t>
             <t hangText="MTID 2:">The topology with MTID 2 carries IPv6

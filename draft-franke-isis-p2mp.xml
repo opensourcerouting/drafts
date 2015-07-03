@@ -52,7 +52,42 @@
   </front>
 
   <middle>
-    <section title="TODO"></section>
+    <section anchor="operation" title="Overview of operation">
+      <t></t>
+    </section>
+
+    <section anchor="mechanics" title="Model of operation">
+      <t></t>
+    </section>
+
+    <section anchor="encoding" title="Wire formats">
+      <t>
+      </t>
+    </section>
+
+    <section anchor="IANA" title="IANA Considerations">
+      <t>IANA is requested to allocate a value from the "IS-IS PDU Registry" as
+        follows:</t>
+      <t><list style="hanging">
+          <t hangText="Type:">TBD-PDU</t>
+          <t hangText="Description:">P2MP-HELLO-PDU</t>
+          <t hangText="Reference:">This document</t>
+      </list></t>
+      <t>Applicability of sub-TLVs for this PDU (per "TLV Codepoints Registry")
+        is per the "IIH" column.</t>
+    </section>
+
+    <section anchor="Security" title="Security Considerations">
+      <t>TODO.</t>
+    </section>
+
+    <section anchor="Privacy" title="Privacy Considerations">
+      <t>TODO.</t>
+    </section>
+
+    <section anchor="Acknowledgements" title="Acknowledgements">
+      <t>TODO.</t>
+    </section>
   </middle>
 
   <back>

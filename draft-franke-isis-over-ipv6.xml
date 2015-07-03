@@ -2,7 +2,7 @@
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
 <!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
 <!ENTITY RFC3307 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3307.xml">
-<!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
+<!ENTITY RFC5308 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5308.xml">
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <?rfc strict="yes" ?>
@@ -18,7 +18,7 @@
          full title is longer than 39 characters -->
 
     <title abbrev="IS-IS over IPv6">IS-IS over IPv6</title>
-    <author fullname="Christian Franke" initials="C.F."
+    <author fullname="Christian Franke" initials="C."
             surname="Franke">
       <organization>NetDEF</organization>
 
@@ -36,7 +36,7 @@
       </address>
     </author>
 
-    <date day="1" month="July" year="2015" />
+    <date day="3" month="July" year="2015" />
 
     <area>Routing</area>
 
@@ -58,12 +58,14 @@
   <middle>
     <section title="Introduction">
       <t>
-	      The original specification of IS-IS <xref target="ISO.10589.2002"/> defines that PDUs are transmitted
+        The original specification of IS-IS <xref target="ISO.10589.2002"/> defines that PDUs are transmitted
         directly on the link-layer. With this design comes the problem that
         specification work is required each time a new link-layer should be
         supported by IS-IS.
         By transmitting IS-IS PDUs as IPv6 packets, this specification work can
-        be avoided and any link-layer supporting IPv6 can be used.
+        be avoided and any link-layer supporting IPv6 can be used. Among other things,
+        this allows to route IPv6 with IS-IS <xref target="RFC5308"/> on any link supporting
+        IPv6.
       </t>
       <t>
         This specification does not make changes to the general operation of
@@ -83,16 +85,16 @@
       <section title="Addressing">
         <t>
           Link-local IPv6 addresses are used to transmit and receive IS-IS PDUs.
-          Routers should set the source address of transmitted the PDUs to the
+          Routers SHALL set the source address of transmitted the PDUs to the
           link-local address of the outgoing interface.
         </t>
         <t>
           IPv6 link-local multicast is used as destination for the packets. The PDUs
           that would be sent to ALL-L1-IS when sending them directly on top of the
-          link-layer MUST be sent to the IPv6 multicast group &lt;TBD&gt; instead.
+          link-layer MUST be sent to the IPv6 multicast group &lt;TBD1&gt; instead.
 
           Respectively, PDUs that would be sent to ALL-L2-IS MUST be sent to the multicast
-          group &lt;TBD&gt;.
+          group &lt;TBD2&gt;.
         </t>
       </section>
       <section title="IPv6 header">
@@ -125,7 +127,7 @@
         </t>
         <t>
           Option a) Treat the whole 16 byte of the IPv6 address as SNPA. Since the SNPA is only used internally
-          to each router and put into any IS-IS PDUs, no protocol datastructures need to be modified for this,
+          to each router and not put into any IS-IS PDUs, no protocol datastructures need to be modified for this,
           but implemenations need to deal with this new SNPA length internally.
         </t>
         <t>
@@ -140,10 +142,10 @@
         </t>
       </section>
       <section title="MTU">
-        <t>All transmitted IPv6 packets should have a maximum size of 1280 bytes. This allows for
-           the protocol to run on any link supporting IPv6. Fragmentation should not be used, therefore
+        <t>All transmitted IPv6 packets SHALL have a maximum size of 1280 bytes. This allows for
+           the protocol to run on any link supporting IPv6. Fragmentation SHALL not be used, therefore
            the lsp-mtu may have to be adjusted for the LSPs to fit into 1280 byte packets.</t>
-        <t>Hello PDUs should be padded to 1280 bytes.</t>
+        <t>Hello PDUs SHOULD be padded so that the total packet size is 1280 bytes.</t>
       </section>
     </section>
     <section anchor="Acknowledgements" title="Acknowledgements">
@@ -155,18 +157,20 @@
     <!-- Possibly a 'Contributors' section ... -->
 
     <section anchor="IANA" title="IANA Considerations">
-      <t>For this protocol, IANA should assign two IPv6 multicast group IDs in the IPv6 Multicast
-        Address Space Registry. <xref target="RFC3307"/>
+      <t>
+        For this protocol, IANA should assign two IPv6 multicast group IDs
+        &lt;TBD1&gt; and &lt;TBD2&gt; in the IPv6 Multicast Address Space Registry.
+        <xref target="RFC3307"/>
       </t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
-      <t>Routers implementing this encapsulation of IS-IS over IPv6 can be succeptible
+      <t>Routers implementing this encapsulation of IS-IS over IPv6 can be susceptible
       to receiving and processing IS-IS over IPv6 packets that have not been originated
-      by a router that is on-link. For example, someone with malicious intent coult send
+      by a router that is on-link. For example, someone with malicious intent could send
       IS-IS over IPv6 packets to a global unicast address of a router via multiple hops.
     </t>
-    <t>For this reason, routers implementing IS-IS over IPv6 should verify that both source
+    <t>For this reason, routers implementing IS-IS over IPv6 SHOULD verify that both source
       and destination of received packets are link-local.</t>
     </section>
   </middle>
@@ -188,13 +192,6 @@
      filing system or remote ones accessed by http (http://domain/dir/... ).-->
 
     <references title="Normative References">
-      <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
-      &RFC2119;
-    </references>
-
-    <references title="Informative References">
-      <!-- Here we use entities that we defined at the beginning. -->
-
       <reference anchor='ISO.10589.2002'>
         <front>
           <title>Intermediate system to intermediate system intra-domain-routing routine information exchange protocol for use in conjunction with the protocol for providing the connectionless-mode Network Service (ISO 8473)</title>
@@ -205,7 +202,11 @@
         </front>
         <seriesInfo name="ISO" value="Standard 10589" />
       </reference>
-
+      <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
+      &RFC2119;
+      &RFC5308;
+    </references>
+    <references title="Informative References">
       &RFC3307;
 
       <reference anchor='I-D.ietf-isis-wg-over-ip'>
@@ -231,3 +232,5 @@
     </references>
   </back>
 </rfc>
+<!-- vim: sw=2 ts=2 et
+-->

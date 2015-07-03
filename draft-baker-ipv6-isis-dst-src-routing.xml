@@ -382,7 +382,48 @@ IPv6 management    5       TBD-MT5
       <?rfc include="reference.I-D.baker-ipv6-isis-dst-flowlabel-routing"?>
     </references>
 
+    <section anchor="log" title="Correctness considerations">
+      <t>While Multi-Topology routing in general can be assumed to work
+        correctly when used on its own, this may not apply to a scenario mixing
+        route calculation results as suggested in this document.  However,
+        this specific application is easily understandable as correct:</t>
+      <t><list>
+          <t>Systems that do not implement D/S routing will not participate in
+            the D/S topology.  They will calculate SPF in the base topology.
+            Packets routed by such system will either (a) cross only non-D/S
+            routers and reach the last hop as intended, or (b) cross a D/S
+            router at some point.</t>
+          <t>For case (b), the D/S router may (b1) or may not (b2) have a more
+            specific D/S route.  In case (b2), packets will be routed based on
+            the same decisions that a non-D/S system would apply, so they will
+            reach their last hop without any differences.</t>
+          <t>For case (b1), a break in forwarding behaviour happens for packets
+            as they hit the first D/S-capable router, possibly after traversing
+            some non-D/S systems.  That router will apply D/S routing - which,
+            since the path calculation is performed in the D/S topology, means
+            that the packet is from there on routed on a path that only
+            contains D/S capable systems.  It will thus reach the D/S last hop
+            as intended.</t>
+          <t>Packets starting out on a D/S-capable router fall into cases (b1)
+            or (b2) as if a non-D/S router routed them first.</t>
+          <t>If, for case (b1), the system knows of the existence of a more
+            specific D/S route, but cannot calculate a valid path, it may
+            either apply non-D/S routing (i.e. not install any route) or
+            discard the packet (i.e. install a discard route).  The next hop
+            will either be a non-D/S system, or a D/S system with the same
+            link-state information (and thus again unable to calculate a valid
+            path -- or, more specifically, won't calculate a path that includes
+            the previous router).</t>
+      </list></t>
+      <t>The compatibility mechanics thus rest on 2 pillars:</t>
+        <list>
+          <t>D/S routes will match as more specific if applicable</t>
+          <t>Packets will transit into D/S routing but not out of it</t>
+      </list></t>
+    </section>
+
     <section anchor="log" title="Change Log">
+      <t>(to be removed)</t>
       <t><list style="hanging">
           <t hangText="Initial Version:">February 2013</t>
 

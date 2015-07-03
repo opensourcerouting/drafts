@@ -382,7 +382,7 @@ IPv6 management    5       TBD-MT5
       <?rfc include="reference.I-D.baker-ipv6-isis-dst-flowlabel-routing"?>
     </references>
 
-    <section anchor="log" title="Correctness considerations">
+    <section title="Correctness considerations">
       <t>While Multi-Topology routing in general can be assumed to work
         correctly when used on its own, this may not apply to a scenario mixing
         route calculation results as suggested in this document.  However,
@@ -415,7 +415,7 @@ IPv6 management    5       TBD-MT5
             path -- or, more specifically, won't calculate a path that includes
             the previous router).</t>
       </list></t>
-      <t>The compatibility mechanics thus rest on 2 pillars:</t>
+      <t>The compatibility mechanics thus rest on 2 pillars:
         <list>
           <t>D/S routes will match as more specific if applicable</t>
           <t>Packets will transit into D/S routing but not out of it</t>

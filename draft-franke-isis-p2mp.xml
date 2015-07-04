@@ -14,7 +14,7 @@
          full title is longer than 39 characters -->
 
     <title abbrev="Point-to-Multipoint for IS-IS">Point-to-Multipoint for IS-IS</title>
-    <author fullname="Christian Franke" initials="C.F."
+    <author fullname="Christian Franke" initials="C."
             surname="Franke">
       <organization>NetDEF</organization>
 
@@ -29,6 +29,18 @@
         </postal>
 
         <email>chris@opensourcerouting.org</email>
+      </address>
+    </author>
+    <author fullname="David Lamparter" initials="D." surname="Lamparter">
+      <organization>NetDEF</organization>
+      <address>
+        <postal>
+          <street/>
+          <code>04103</code>
+          <city>Leipzig</city>
+          <country>Germany</country>
+        </postal>
+        <email>david@opensourcerouting.org</email>
       </address>
     </author>
 
@@ -52,11 +64,116 @@
   </front>
 
   <middle>
-    <section anchor="operation" title="Overview of operation">
-      <t></t>
+    <section anchor="intro" title="Introduction">
+      <t>The core functionality of the protocol outlined in this document
+        consists of an additional Subnetwork dependent function per <xref
+          target="IS-IS">Section 8 of ISO/IEC 10589:2002.</xref>
+        In that regard, the next section can be understood as new section "8.5
+        Point-to-multipoint networks".</t>
+      <t>The outlined protocol is remotely similar to the derelict section
+        "8.3 ISO 8208 subnetworks" in that multiple point-to-point adjacencies
+        are established on an interface.</t>
+      <t>Point-to-multipoint operation of IS-IS is thus not a new idea; in
+        fact section 6.2 already mentions "multipoint links."  This document
+        simply re-enables their practical use.</t>
     </section>
 
-    <section anchor="mechanics" title="Model of operation">
+    <?rfc needLines="5" ?>
+
+    <section anchor="pseudocirc" title="P2MP Pseudocircuits">
+      <t>In place of ISO 8473 call management establishing sessions, this
+        document establishes pairwise "pseudocircuits" between two IS on a
+        common medium.  Multiple such pseudocircuits will normally exist on
+        one P2MP interface.</t>
+      <t>Each pseudocircuit functions, aside from subnetwork attachment
+        procedures, exactly as a PtP link.</t>
+
+      <?rfc needLines="5" ?>
+
+      <section title="Pseudocircuit behaviour">
+        <t>An implementation maintains a set of pseudocircuits per P2MP
+          interface.  Each pseudocircuit is uniquely identified by the local
+          interface and peer's SNPA address.</t>
+        <t>Each participating system MUST use a consistent SNPA address per
+          local interface.  A change in SNPA address results in all neighbors
+          treating the interface as distinct from the previous one.  A system
+          MAY support multiple SNPA addresses per interface by treating them as
+          distinct interfaces.</t>
+        <t>Unnumbered media are not supported by this protocol.  Each
+          participant on a link MUST have an unique SNPA address on that
+          link.</t>
+
+        <t>As pseudocircuits are dynamic in nature, they must be created and
+          destroyed as needed.  While destruction happens through PtP adjacency
+          timeout functionality (<xref target="IS-IS">IS-IS section
+            8.2.6</xref>), creation requires peer identification.</t>
+      </section>
+
+      <?rfc needLines="5" ?>
+
+      <section title="Neighbor IS discovery">
+        <t>The discovery machinery produces as output the "candidate neighbor
+          list," which is a list of possible neighbor's SNPAs and is
+          maintained per P2MP interface.  Additional information (metric,
+          etc.) MAY be associated with the SNPA, but this is not part of the
+          discovery mechanism.</t>
+        <t>The list is the union of the result of each of the following
+          sources of neighbor information.  The IS implementation SHOULD
+          provide user configuration to disable individual mechanisms and/or
+          filter candidate neighbors as a security measure.</t>
+
+        <section title="Manual configuration">
+          <t>A list of neighbor IS MAY be configured by the user, providing
+            possible neighbor's SNPAs on an interface.</t>
+        </section>
+
+        <section title="Lower layer autodiscovery">
+          <t>Lower protocol layers (VPLS, IEEE 802.11) may be able to provide
+            a list of attached neighbors.  This list MAY be fed into the
+            candidate neighbor list.</t>
+        </section>
+
+        <section title="Multicast autodiscovery">
+          <t>For broadcast capable networks, this document defines an
+            autodiscovery mechanism based on multicasting Hello packets.
+            This mechanism MAY be disabled by the user, but MUST be
+            implemented for all lower layer link types with (limited or full)
+            broadcast capability.</t>
+        </section>
+
+        <section title="General considerations">
+          <t>It should be noted that while the Multicast autodiscovery
+            mechanism requires broadcast capability, no other part of the
+            protocol does.  The P2MP interface type can be used on
+            non-transitive and/or non-broadcast interfaces.</t>
+          <t>The candidate neighbor list is not tied to the adjacency list; in
+            particular, on purging an adjacency from the database due to
+            timeout, the neighbor MUST NOT be removed from the candidate
+            neighbor list.</t>
+        </section>
+      </section>
+
+      <?rfc needLines="5" ?>
+
+      <section title="Adjacency formation">
+        <t>Since there in this case there is no underlying protocol layer
+          partitioning the link into actual PtP circuits, additional handling
+          is required on bringing up the individual pseudocircuit
+          adjacencies.</t>
+        <t>To prevent different pseudocircuits from "bleeding" into each other,
+          implementations of this protocol MUST enable <xref target="RFC5303"/>
+          on all P2MP pseudocircuits, with changes as follows:
+          <list>
+            <t>Received IIH PDUs on P2MP pseudocircuits without the
+              Point-to-Point Three-Way Adjacency option MUST be discarded.  The
+              TLV is not optional on pseudocircuit adjacencies but rather
+              mandatory.</t>
+          </list>
+        </t>
+      </section>
+    </section>
+
+    <section anchor="mechanics" title="Detailed procedure">
       <t></t>
     </section>
 
@@ -108,6 +225,7 @@
       </reference>
 
       <?rfc include="reference.RFC.2119"?>
+      <?rfc include="reference.RFC.5303"?>
     </references>
 
     <!-- references title="Informative References">

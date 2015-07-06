@@ -140,7 +140,7 @@
             implemented for all lower layer link types with (limited or full)
             broadcast capability.</t>
           <t>A system MAY implement a receive-only passive multicast
-            autodiscovery mode where it adds system to the candidate neighbor
+            autodiscovery mode where it adds systems to the candidate neighbor
             list on receiving autodiscovery PDUs, but does not send such PDUs
             itself.</t>
         </section>
@@ -177,8 +177,31 @@
       </section>
     </section>
 
-    <section anchor="processing" title="PDU processing">
-      <t></t>
+    <section anchor="processing" title="PDU generation and processing">
+      <section title="LSP, CSNP, PSNP and all other non-Hello PDU types">
+        <t>All PDU types that are not Hello PDUs, e.g. L1/L2 LSP PDUs, L1/L2
+          CSNP/PSNP PDUs, FS-LSP, FS-CSNP and FS-PSNP PDUs are processed on
+          P2MP interfaces by dispatching them to an individual pseudocircuits
+          by looking up the PDU's source address in the interface's list of
+          P2MP pseudocircuit adjacencies.  This includes all functions defined
+          in <xref target="IS-IS">Section 7 of ISO/IEC 10589:2002</xref> and
+          PDUs added in <xref target="RFC7176"/> and <xref
+            target="RFC7356"/>.</t>
+        <t>While possible, this document does not suggest sending such PDUs to
+          multicast destinations.  All systems MUST send these PDUs to unicast
+          lower layer destinations so that they are received only by the
+          pseudocircuit's neighbor system.  However, systems SHOULD NOT check
+          the destination address on receipt to allow future optimisations.</t>
+      </section>
+      <section title="LAN and P2P Hellos">
+        <t>Received LAN and P2P Hello PDUs MUST be discarded when received on
+          an interface configured for P2MP operation.  The system MAY notify
+          the operator of such a misconfiguration.</t>
+        <t>TODO: hitless migration possible?</t>
+      </section>
+      <section title="P2MP Hello PDUs">
+        <t>TODO</t>
+      </section>
     </section>
 
     <section anchor="encoding" title="PDU encoding">
@@ -312,8 +335,10 @@
       <?rfc include="reference.RFC.5303"?>
     </references>
 
-    <!-- references title="Informative References">
-    </references -->
+    <references title="Informative References">
+      <?rfc include="reference.RFC.7176"?>
+      <?rfc include="reference.RFC.7356"?>
+    </references>
   </back>
 </rfc>
 <!-- vim: sw=2 ts=2 et

@@ -93,8 +93,6 @@
         protocol does.  The P2MP interface type can be used on
         non-transitive and/or non-broadcast interfaces.</t>
 
-      <?rfc needLines="5" ?>
-
       <section title="Pseudocircuit behaviour">
         <t>An implementation maintains a set of pseudocircuits per P2MP
           interface.  Each pseudocircuit is uniquely identified by the local
@@ -109,10 +107,24 @@
           link.</t>
 
         <t>As pseudocircuits are dynamic in nature, they must be created and
-          destroyed as needed.  </t>
-      </section>
+          destroyed as needed.</t>
 
-      <?rfc needLines="5" ?>
+        <section title="Representation in LSPs">
+          <t>Pseudocircuits are represented in LSPs as a regular PtP circuit
+            would be.  As a result, their treatment in SPF calculations is also
+            identical to PtP circuits.</t>
+        </section>
+
+        <section title="Forwarding">
+          <t>In scenarios where pseudocircuits do not form a full mesh of all
+            participants on a medium, the best path for a packet may be
+            through the same interface as the one it was received on.</t>
+          <t>Systems implementing this specification MUST therefore support
+            forwarding packets on the same interface that they were received
+            on.  This applies only to interfaces configured for P2MP
+            operation.</t>
+        </section>
+      </section>
 
       <section title="Neighbor IS discovery">
         <t>The discovery machinery produces as output a "candidate neighbor

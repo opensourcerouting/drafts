@@ -139,6 +139,10 @@
             This mechanism MAY be disabled by the user, but MUST be
             implemented for all lower layer link types with (limited or full)
             broadcast capability.</t>
+          <t>A system MAY implement a receive-only passive multicast
+            autodiscovery mode where it adds system to the candidate neighbor
+            list on receiving autodiscovery PDUs, but does not send such PDUs
+            itself.</t>
         </section>
 
         <section title="General considerations">

@@ -8,7 +8,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-franke-isis-p2mp" ipr="trust200902">
+<rfc category="std" docName="draft-lamparter-isis-p2mp" ipr="trust200902">
   <front>
     <!-- The abbreviated title is used in the page header - it is only necessary if the 
          full title is longer than 39 characters -->

@@ -181,7 +181,7 @@
         <t>To prevent different pseudocircuits from "bleeding" into each other,
           implementations of this protocol MUST enable <xref target="RFC5303"/>
           on all P2MP pseudocircuits, with changes as follows:
-          <list>
+          <list style="symbols">
             <t>Received IIH PDUs on P2MP pseudocircuits without the
               Point-to-Point Three-Way Adjacency option MUST be discarded.  The
               TLV is not optional on pseudocircuit adjacencies but rather
@@ -204,7 +204,7 @@
             <t>Manual configuration or lower layer autodiscovery no longer
               lists the neighbor.</t>
           </list>
-          As long as a pseudocircuit is is present, its PtP state machine
+          As long as a pseudocircuit is present, its PtP state machine
           will, as expected for PtP circuits, trigger transmission of further
           Hello PDUs, even when it is in Down state.</t>
       </section>

@@ -197,9 +197,9 @@
             <t>Manual configuration or lower layer autodiscovery no longer
               lists the neighbor.</t>
           </list>
-          The PtP state machine will, as expected for PtP circuits, trigger
-          sending further Hello PDUs as the pseudocircuit remains in Down
-          state.</t>
+          As long as a pseudocircuit is is present, its PtP state machine
+          will, as expected for PtP circuits, trigger transmission of further
+          Hello PDUs, even when it is in Down state.</t>
       </section>
     </section>
 

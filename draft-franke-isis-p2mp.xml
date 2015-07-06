@@ -83,9 +83,9 @@
     <section anchor="pseudocirc" title="P2MP Pseudocircuits">
       <t>In place of ISO 8473 call management establishing sessions, this
         document establishes pairwise "pseudocircuits" between two IS on a
-        common medium.  Multiple such pseudocircuits will normally exist on
+        common medium.  Multiple such pseudocircuits can normally exist on
         one P2MP interface.</t>
-      <t>Each pseudocircuit functions, aside from subnetwork attachment
+      <t>Each pseudocircuit operates, aside from subnetwork attachment
         procedures, exactly as a PtP link.</t>
 
       <?rfc needLines="5" ?>
@@ -160,8 +160,8 @@
       <?rfc needLines="5" ?>
 
       <section title="Adjacency formation">
-        <t>Since there in this case there is no underlying protocol layer
-          partitioning the link into actual PtP circuits, additional handling
+        <t>Since there is no underlying protocol layer
+          partitioning the link into actual PtP circuits in this case, additional handling
           is required on bringing up the individual pseudocircuit
           adjacencies.</t>
         <t>To prevent different pseudocircuits from "bleeding" into each other,
@@ -243,7 +243,7 @@
 :                                                               :
 </artwork>
         </figure>
-        <t>All fields function exactly as for Point-to-Point IS hello PDUs,
+        <t>All fields function exactly as for Point-to-Point IS-IS hello PDUs,
           as specified in <xref target="IS-IS">Section 9.7 of ISO/IEC
             10589:2002</xref>.</t>
         <t>Note the Local Circuit ID field is absent.  Its function is replaced

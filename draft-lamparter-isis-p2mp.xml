@@ -8,12 +8,13 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-lamparter-isis-p2mp" ipr="trust200902">
+<rfc category="std" docName="draft-lamparter-isis-p2mp-00" ipr="trust200902">
   <front>
     <!-- The abbreviated title is used in the page header - it is only necessary if the 
          full title is longer than 39 characters -->
 
-    <title abbrev="Point-to-Multipoint for IS-IS">Point-to-Multipoint for IS-IS</title>
+    <title abbrev="IS-IS Point-to-Multipoint operation"
+                  >IS-IS Point-to-Multipoint operation</title>
     <author fullname="Christian Franke" initials="C."
             surname="Franke">
       <organization>NetDEF</organization>
@@ -54,10 +55,10 @@
     <abstract>
       <t>
         This document describes a new mode operation for IS-IS. In addition
-        to the existing LAN and point-to-point mode of operation, a point-to-multipoint
+        to the existing LAN and point-to-point modes of operation, a point-to-multipoint
         mode is defined. This mode is useful for operation both on networks with more than
-        two routers where multicast is expensive in comparison to unicast and on
-        networks where the common methodology of creating a LAN pseudonode cannot adequately
+        two routers where multicast is expensive in comparison to unicast, as well on
+        networks where creating a LAN pseudonode cannot adequately
         reflect metrics.
       </t>
     </abstract>
@@ -67,12 +68,12 @@
     <section anchor="intro" title="Introduction">
       <t>The core functionality of the protocol outlined in this document
         consists of an additional Subnetwork dependent function per <xref
-          target="IS-IS">Section 8 of ISO/IEC 10589:2002.</xref>
+          target="IS-IS">Section 8 of ISO/IEC 10589:2002</xref>.
         In that regard, the next section can be understood as new section "8.5
         Point-to-multipoint networks".</t>
       <t>The outlined protocol is remotely similar to the derelict section
-        "8.3 ISO 8208 subnetworks" in that multiple point-to-point adjacencies
-        are established on an interface.</t>
+        "8.3 ISO 8208 subnetworks" <xref target="X.25"/> in that multiple
+        point-to-point adjacencies are established on an interface.</t>
       <t>Point-to-multipoint operation of IS-IS is thus not a new idea; in
         fact section 6.2 already mentions "multipoint links."  This document
         re-enables the concept.</t>
@@ -81,10 +82,10 @@
     <?rfc needLines="5" ?>
 
     <section anchor="pseudocirc" title="P2MP Pseudocircuits">
-      <t>In place of ISO 8473 call management establishing sessions, this
-        document establishes pairwise "pseudocircuits" between two IS on a
-        common medium.  Multiple such pseudocircuits can normally exist on
-        one P2MP interface.</t>
+      <t>In place of <xref target="CLNS">ISO 8473 call management</xref>
+        establishing sessions, this document establishes pairwise
+        "pseudocircuits" between two IS on a common medium.  Multiple such
+        pseudocircuits can normally exist on one P2MP interface.</t>
       <t>Each pseudocircuit operates, aside from subnetwork attachment
         procedures, exactly as a PtP link.</t>
       <t>It should be noted that while the Multicast autodiscovery
@@ -328,12 +329,10 @@
       </list></t>
       <t>Applicability of sub-TLVs for this PDU (per "TLV Codepoints Registry")
         is per the "IIH" column.</t>
-      <t>TODO: Request TBD-TLV value</t>
-      <t>TODO: Request Registry TBD-TLV's Sub-TLVs</t>
     </section>
 
     <section anchor="model" title="Configuration model">
-      <t>TODO.</t>
+      <t>TODO: YANG model.</t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
@@ -371,6 +370,28 @@
     </references>
 
     <references title="Informative References">
+      <reference anchor="X.25">
+        <front>
+          <title>X.25 Packet Layer Protocol for Data Terminal Equipment</title>
+          <author>
+            <organization>ISO/IEC</organization>
+          </author>
+          <date year="2000"/>
+        </front>
+        <seriesInfo name="ISO/IEC" value="8208:2000"/>
+      </reference>
+      <reference anchor="CLNS">
+        <front>
+          <title>Protocol for providing the connectionless-mode network
+            service: Protocol specification</title>
+          <author>
+            <organization>ISO/IEC</organization>
+          </author>
+          <date year="1998"/>
+        </front>
+        <seriesInfo name="ISO/IEC" value="8473-1:1998"/>
+      </reference>
+
       <?rfc include="reference.RFC.7176"?>
       <?rfc include="reference.RFC.7356"?>
     </references>

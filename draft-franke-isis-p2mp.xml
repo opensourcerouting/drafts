@@ -87,6 +87,10 @@
         one P2MP interface.</t>
       <t>Each pseudocircuit operates, aside from subnetwork attachment
         procedures, exactly as a PtP link.</t>
+      <t>It should be noted that while the Multicast autodiscovery
+        mechanism requires broadcast capability, no other part of the
+        protocol does.  The P2MP interface type can be used on
+        non-transitive and/or non-broadcast interfaces.</t>
 
       <?rfc needLines="5" ?>
 
@@ -104,23 +108,26 @@
           link.</t>
 
         <t>As pseudocircuits are dynamic in nature, they must be created and
-          destroyed as needed.  While destruction happens through PtP adjacency
-          timeout functionality (<xref target="IS-IS">IS-IS section
-            8.2.6</xref>), creation requires peer identification.</t>
+          destroyed as needed.  </t>
       </section>
 
       <?rfc needLines="5" ?>
 
       <section title="Neighbor IS discovery">
-        <t>The discovery machinery produces as output the "candidate neighbor
+        <t>The discovery machinery produces as output a "candidate neighbor
           list," which is a list of possible neighbor's SNPAs and is
           maintained per P2MP interface.  Additional information (metric,
           etc.) MAY be associated with the SNPA, but this is not part of the
           discovery mechanism.</t>
-        <t>The list is the union of the result of each of the following
-          sources of neighbor information.  The IS implementation SHOULD
-          provide user configuration to disable individual mechanisms and/or
-          filter candidate neighbors as a security measure.</t>
+        <t>The candidate neighbor list is conceptual in nature; adding and
+          removing entries results in pseudocircuit creation and deletion.  It
+          need not be implemented as an actual list.</t>
+        <t>The list is the union of the result of each of the following sources
+          of neighbor information. A neighbor may be listed by multiple
+          sources: it MUST NOT be removed while any source still lists it.</t>
+        <t>The IS-IS implementation SHOULD provide user configuration to
+          disable individual mechanisms and/or filter candidate neighbors both
+          as a security and as misconfiguration preventing measure.</t>
 
         <section title="Manual configuration">
           <t>A list of neighbor IS MAY be configured by the user, providing
@@ -139,25 +146,25 @@
             This mechanism MAY be disabled by the user, but MUST be
             implemented for all lower layer link types with (limited or full)
             broadcast capability.</t>
+          <t>Multicast autodiscovery P2MP Hello PDUs are distinguished by not
+            containing a RFC5303 Three-Way Adjacency TLV.  Receiving such a
+            Hello places the sending IS on the candidate list for as long as
+            the PDU's holdtime indicates.</t>
           <t>A system MAY implement a receive-only passive multicast
-            autodiscovery mode where it adds systems to the candidate neighbor
-            list on receiving autodiscovery PDUs, but does not send such PDUs
+            autodiscovery mode where it adds candidates (forms pseudocircuits)
+            on receiving P2MP Hello PDUs, but does not send such PDUs
             itself.</t>
         </section>
 
-        <section title="General considerations">
-          <t>It should be noted that while the Multicast autodiscovery
-            mechanism requires broadcast capability, no other part of the
-            protocol does.  The P2MP interface type can be used on
-            non-transitive and/or non-broadcast interfaces.</t>
-          <t>The candidate neighbor list is not tied to the adjacency list; in
-            particular, on purging an adjacency from the database due to
-            timeout, the neighbor MUST NOT be removed from the candidate
-            neighbor list.</t>
+        <section title="Inbound PtP Hellos">
+          <t>Receiving a P2MP Hello PDU with a Three-Way Adjacency TLV (which
+            is therefore processed on the pseudocircuit) also triggers creation
+            of a pseudocircuit of no matching one exists.  This may be
+            implemented by placing the system on the candidate list.</t>
+          <t>In any case a pseudocircuit is held in existence if its PtP state
+            machine is in a state other than "Down".</t>
         </section>
       </section>
-
-      <?rfc needLines="5" ?>
 
       <section title="Adjacency formation">
         <t>Since there is no underlying protocol layer
@@ -175,13 +182,32 @@
           </list>
         </t>
       </section>
+
+      <section title="Pseudocircuit teardown">
+        <t>Pseudocircuits are destroyed when their PtP state machine has
+          transitioned into "Down" state and they are no longer listed as
+          candidates by any discovery mechanism.  The conditions for
+          pseudocircuit removal are thus:
+          <list style="symbols">
+            <t>PtP adjacency timeout functionality (<xref target="IS-IS">IS-IS
+                section 8.2.6</xref>) has moved the pseudocircuit to Down
+              state, or it never moved out of Down state</t>
+            <t>The holdtime of any multicast autodiscovery P2MP Hello PDUs has
+              expired.</t>
+            <t>Manual configuration or lower layer autodiscovery no longer
+              lists the neighbor.</t>
+          </list>
+          The PtP state machine will, as expected for PtP circuits, trigger
+          sending further Hello PDUs as the pseudocircuit remains in Down
+          state.</t>
+      </section>
     </section>
 
     <section anchor="processing" title="PDU generation and processing">
       <section title="LSP, CSNP, PSNP and all other non-Hello PDU types">
         <t>All PDU types that are not Hello PDUs, e.g. L1/L2 LSP PDUs, L1/L2
           CSNP/PSNP PDUs, FS-LSP, FS-CSNP and FS-PSNP PDUs are processed on
-          P2MP interfaces by dispatching them to individual pseudocircuits
+          P2MP interfaces by dispatching them to an individual pseudocircuit
           by looking up the PDU's source address in the interface's list of
           P2MP pseudocircuits.  This includes all functions defined
           in <xref target="IS-IS">Section 7 of ISO/IEC 10589:2002</xref> and

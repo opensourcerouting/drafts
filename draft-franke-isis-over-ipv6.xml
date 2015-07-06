@@ -2,6 +2,7 @@
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
 <!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
 <!ENTITY RFC3307 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3307.xml">
+<!ENTITY RFC5237 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5237.xml">
 <!ENTITY RFC5308 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5308.xml">
 ]>
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
@@ -85,7 +86,7 @@
       <section title="Addressing">
         <t>
           Link-local IPv6 addresses are used to transmit and receive IS-IS PDUs.
-          Routers SHALL set the source address of transmitted the PDUs to the
+          Routers SHALL set the source address of transmitted PDUs to the
           link-local address of the outgoing interface.
         </t>
         <t>
@@ -147,6 +148,15 @@
            the lsp-mtu may have to be adjusted for the LSPs to fit into 1280 byte packets.</t>
         <t>Hello PDUs SHOULD be padded so that the total packet size is 1280 bytes.</t>
       </section>
+      <section title="Interoperability">
+        <t>IS-IS implementations supporting IS-IS over IPv6 SHOULD provide a method that allows
+          to choose between <xref target="ISO.10589.2002"/> and IS-IS over IPv6 encapsulation for
+          each interface.
+          Implementations MUST NOT transmit or process ISO 10589:2002 PDUs on
+          interfaces running in IS-IS over IPv6 mode and they MUST NOT transmit or process
+          IS-IS over IPv6 PDUs on interfaces running in ISO 10589:2002 mode.
+        </t>
+      </section>
     </section>
     <section anchor="Acknowledgements" title="Acknowledgements">
 	    <t>There has been previous work to specify operation of IS-IS over IPv4  <xref target="I-D.ietf-isis-wg-over-ip" />
@@ -161,6 +171,8 @@
         For this protocol, IANA should assign two IPv6 multicast group IDs
         &lt;TBD1&gt; and &lt;TBD2&gt; in the IPv6 Multicast Address Space Registry.
         <xref target="RFC3307"/>
+        Also, IANA should change the name of protocol 124 in the Internet Protocol Number
+        registry <xref target="RFC5237"/> from "ISIS over IPv4" to "ISIS".
       </t>
     </section>
 

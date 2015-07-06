@@ -167,15 +167,9 @@
             autodiscovery mode where it adds candidates (forms pseudocircuits)
             on receiving P2MP Hello PDUs, but does not send such PDUs
             itself.</t>
-        </section>
-
-        <section title="Inbound PtP Hellos">
-          <t>Receiving a P2MP Hello PDU with a Three-Way Adjacency TLV (which
-            is therefore processed on the pseudocircuit) also triggers creation
-            of a pseudocircuit of no matching one exists.  This may be
-            implemented by placing the system on the candidate list.</t>
-          <t>In any case a pseudocircuit is held in existence if its PtP state
-            machine is in a state other than "Down".</t>
+          <t>If either passive or full multicast autodiscovery is enabled,
+            receiving a P2MP Hello PDU with a Three-Way Adjacency TLV also adds
+            the neighbor to the candidate list.</t>
         </section>
       </section>
 

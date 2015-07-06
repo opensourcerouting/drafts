@@ -222,6 +222,42 @@
         <t>Note the Local Circuit ID field is absent.  Its function is replaced
           by <xref target="RFC5303"/>.</t>
       </section>
+      <section title="P2MP Discovery TLV">
+        <figure><preamble>Figure 2: P2MP Discovery TLV format</preamble>
+          <artwork>
+ MSB                         LSB
+  8   7   6   5   4   3   2   1
++---+---+---+---+---+---+---+---+
+|        TBD-TLV (Type)         |
++---+---+---+---+---+---+---+---+
+|            Length             |
++---+---+---+---+---+---+---+---+
+|                               |
+|   Extended Local Circuit ID   |
+|           (4 octets)          |
+|                               |
++---+---+---+---+---+---+---+---+
+:           Sub-TLVs            :
+:          (optional)           :
+:                               :
+</artwork>
+        </figure>
+        <t>Where the individual fields are:<list style="hanging">
+            <t hangText="Type:">TBD-TLV, indicating the P2MP Discovery TLV
+              Type</t>
+            <t hangText="Length:">Length in octets of the TLV, excluding its
+              header.  Must be either 4 or larger or equal than 6.  A value
+              of 6 or larger indicates Sub-TLVs are present.</t>
+            <t hangText="Extended Local Circuit ID:">The sending system's
+              unique identifier for the interface the PDU is sent on, as
+              defined by <xref target="RFC5303"/>.</t>
+            <t hangText="Sub-TLVs:">Optionally, further Sub-TLVs to provide
+              additional information about the sending system in context of
+              P2MP discovery.  Intended to include additional information about
+              a system's attachment to the medium, with relevance to P2MP
+              adjacency formation.</t>
+        </list></t>
+      </section>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
@@ -234,6 +270,8 @@
       </list></t>
       <t>Applicability of sub-TLVs for this PDU (per "TLV Codepoints Registry")
         is per the "IIH" column.</t>
+      <t>TODO: Request TBD-TLV value</t>
+      <t>TODO: Request Registry TBD-TLV's Sub-TLVs</t>
     </section>
 
     <section anchor="Security" title="Security Considerations">

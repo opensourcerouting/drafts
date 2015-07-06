@@ -75,7 +75,7 @@
         are established on an interface.</t>
       <t>Point-to-multipoint operation of IS-IS is thus not a new idea; in
         fact section 6.2 already mentions "multipoint links."  This document
-        simply re-enables their practical use.</t>
+        re-enables the concept.</t>
     </section>
 
     <?rfc needLines="5" ?>
@@ -104,33 +104,49 @@
           link.</t>
 
         <t>As pseudocircuits are dynamic in nature, they must be created and
-          destroyed as needed.  While destruction happens through PtP adjacency
-          timeout functionality (<xref target="IS-IS">IS-IS section
-            8.2.6</xref>), creation requires peer identification.</t>
+          destroyed as needed.  Destruction is triggered when no mechanism
+          holds the pseudocircuit alive anymore, which means:
+          <list>
+            <t>PtP adjacency timeout functionality (<xref target="IS-IS">IS-IS
+                section 8.2.6</xref>) has moved the pseudocircuit to Down
+              state</t>
+            <t>The holdtime of any multicast autodiscovery P2MP Hello PDUs has
+              expired.</t>
+            <t>Manual configuration or lower layer autodiscovery no longer
+              lists the neighbor.</t>
+          </list>
+          Unless all of these conditions are fulfilled, systems MUST NOT
+          destroy a pseudocircuits.  The pseudocircuit is instead kept in Down
+          state, and further Hellos MUST be sent on the pseudocircuit.
+        </t>
       </section>
 
-      <?rfc needLines="5" ?>
-
       <section title="Neighbor IS discovery">
-        <t>The discovery machinery produces as output the "candidate neighbor
-          list," which is a list of possible neighbor's SNPAs and is
-          maintained per P2MP interface.  Additional information (metric,
-          etc.) MAY be associated with the SNPA, but this is not part of the
-          discovery mechanism.</t>
+        <t>The discovery machinery provides a set of suggested pseudocircuit
+          neighbors per P2MP interface, identified by their SNPA addresses.
+          Implementations MUST create a pseudocircuit for each suggested
+          neighbor unless directed otherwise by operator configuration.
+          Additional information (metrics, etc.) MAY be passed up by the
+          discovery mechanism, associated with individual neighbors, but this
+          is not core part of the discovery mechanism.</t>
         <t>The list is the union of the result of each of the following
           sources of neighbor information.  The IS implementation SHOULD
           provide user configuration to disable individual mechanisms and/or
-          filter candidate neighbors as a security measure.</t>
+          filter neighbors as a security measure.</t>
 
         <section title="Manual configuration">
           <t>A list of neighbor IS MAY be configured by the user, providing
-            possible neighbor's SNPAs on an interface.</t>
+            possible neighbor's SNPAs on an interface.  Pseudocircuits created
+            in such a way are not destroyed unless the operator removes the
+            configuration entry.</t>
         </section>
 
         <section title="Lower layer autodiscovery">
           <t>Lower protocol layers (VPLS, IEEE 802.11) may be able to provide
             a list of attached neighbors.  This list MAY be fed into the
-            candidate neighbor list.</t>
+            pseudocircuit creation process.  Destruction of pseudocircuits
+            does not happen as long as the lower layer suggests the neighbor
+            is still present.</t>
         </section>
 
         <section title="Multicast autodiscovery">
@@ -140,9 +156,24 @@
             implemented for all lower layer link types with (limited or full)
             broadcast capability.</t>
           <t>A system MAY implement a receive-only passive multicast
-            autodiscovery mode where it adds systems to the candidate neighbor
-            list on receiving autodiscovery PDUs, but does not send such PDUs
-            itself.</t>
+            autodiscovery mode where it forms pseudocircuits on receiving
+            P2MP Hello PDUs, but does not send such PDUs itself.</t>
+          <t>Multicast autodiscovery P2MP Hello PDUs are distinguished by not
+            containing a RFC5303 Three-Way Adjacency TLV.</t>
+        </section>
+
+        <section title="Inbound hellos">
+          <t>Received P2MP Hello PDUs trigger pseudocircuit creation (subject
+            to configuration restrictions) in all cases where no matching
+            existing pseudocircuit can be found.  This handles both remote
+            creation of pseudocircuits as well as incoming multicast
+            autodiscovery PDUs.</t>
+          <t>Pseudocircuits created from received P2MP Hello PDUs are held
+            in Down state (and further Hellos are sent on the pseudocircuit)
+            beyond the PtP timeout per <xref target="IS-IS">IS-IS section
+              8.2.6</xref> if a multicast autodiscovery PDU was received from
+            the neighbor and its holdtime expires later than the PtP
+            timeout.</t>
         </section>
 
         <section title="General considerations">
@@ -150,10 +181,6 @@
             mechanism requires broadcast capability, no other part of the
             protocol does.  The P2MP interface type can be used on
             non-transitive and/or non-broadcast interfaces.</t>
-          <t>The candidate neighbor list is not tied to the adjacency list; in
-            particular, on purging an adjacency from the database due to
-            timeout, the neighbor MUST NOT be removed from the candidate
-            neighbor list.</t>
         </section>
       </section>
 

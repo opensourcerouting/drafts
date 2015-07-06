@@ -208,9 +208,9 @@
       <section title="LSP, CSNP, PSNP and all other non-Hello PDU types">
         <t>All PDU types that are not Hello PDUs, e.g. L1/L2 LSP PDUs, L1/L2
           CSNP/PSNP PDUs, FS-LSP, FS-CSNP and FS-PSNP PDUs are processed on
-          P2MP interfaces by dispatching them to an individual pseudocircuits
+          P2MP interfaces by dispatching them to individual pseudocircuits
           by looking up the PDU's source address in the interface's list of
-          P2MP pseudocircuit adjacencies.  This includes all functions defined
+          P2MP pseudocircuits.  This includes all functions defined
           in <xref target="IS-IS">Section 7 of ISO/IEC 10589:2002</xref> and
           PDUs added in <xref target="RFC7176"/> and <xref
             target="RFC7356"/>.</t>

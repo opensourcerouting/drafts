@@ -173,13 +173,55 @@
       </section>
     </section>
 
-    <section anchor="mechanics" title="Detailed procedure">
+    <section anchor="processing" title="PDU processing">
       <t></t>
     </section>
 
-    <section anchor="encoding" title="Wire formats">
-      <t>
-      </t>
+    <section anchor="encoding" title="PDU encoding">
+      <t>(Note this section follows ISO 10589 section 9, particularly in
+        numbering bits starting at 1 for the LSB.)</t>
+      <section title="P2MP Hello PDU">
+        <figure><preamble>Figure 1: P2MP Hello PDU format</preamble>
+          <artwork>
+ MSB                         LSB MSB                         LSB
+  8   7   6   5   4   3   2   1   8   7   6   5   4   3   2   1
++---+---+---+---+---+---+---+---+ - + - + - + - + - + - + - + - +
+| 0x83 (Protocol Discriminator) |
++---+---+---+---+---+---+---+---+
+|       Length Indicator        |
++---+---+---+---+---+---+---+---+
+|  0x01 (Version/ID Extension)  |
++---+---+---+---+---+---+---+---+
+|           ID Length           |
++---+---+---+---+---+---+---+---+
+| R   R   R | TBD-PDU (PDU Type)|
++---+---+---+---+---+---+---+---+
+|        0x01 (Version)         |
++---+---+---+---+---+---+---+---+
+| R   R   R   R   R   R   R   R |
++---+---+---+---+---+---+---+---+
+|    Maximum Area Addresses     |
++---+---+---+---+---+---+---+---+
+| R   R   R   R   R   R |CircTyp|
++---+---+---+---+---+---+---+---+
+|           Source ID           |
+:          (ID Length)          :
+:                               :
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+|                          Holding Time                         |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+|                           PDU Length                          |
++---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
+:                   Variable Length Fields (TLVs)               :
+:                                                               :
+</artwork>
+        </figure>
+        <t>All fields function exactly as for Point-to-Point IS hello PDUs,
+          as specified in <xref target="IS-IS">Section 9.7 of ISO/IEC
+            10589:2002</xref>.</t>
+        <t>Note the Local Circuit ID field is absent.  Its function is replaced
+          by <xref target="RFC5303"/>.</t>
+      </section>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">

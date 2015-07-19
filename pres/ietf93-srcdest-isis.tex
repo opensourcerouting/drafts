@@ -46,21 +46,10 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Loop case \#1}
-  \includegraphics[scale=0.45,angle=-90]{isis_loop1.pdf}%
-  \vspace{10mm}
-  \begin{itemize}
-    \item a dst-src route MUST NOT traverse via a non-dst-src nexthop
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Loop case \#2}
-  \includegraphics[scale=0.45,angle=-90]{isis_loop2.pdf}%
-  \vspace{10mm}
-  \begin{itemize}
-    \item dst-src routes MUST be ignored by non-dst-src routers
-  \end{itemize}
+  \frametitle{Loop cases}
+  \begin{center}
+    \includegraphics[scale=0.55,angle=0]{isis_93_loop_base.pdf}%
+  \end{center}
 \end{frame}
 
 \begin{frame}
@@ -76,6 +65,27 @@
     \item participation in separate topology is capability indication
     \item TLVs in separate topology are invisible to non-participants
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Loop cases}
+  \begin{center}
+    \includegraphics<1>[scale=0.55,angle=0]{isis_93_loop_base.pdf}%
+    \includegraphics<2>[scale=0.55,angle=0]{isis_93_loop_mt1.pdf}%
+    \includegraphics<3>[scale=0.55,angle=0]{isis_93_loop_mt2.pdf}%
+  \end{center}
+  \begin{itemize}
+    \item<2-3> \only<2>{A/A hidden from router \#3 $\Rightarrow$ default route works}
+               \only<3>{connecting MT islands allows router \#1 to reach A/A}
+    \item<2> router \#1 detects non-reachability of A/A
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Route installation}
+  \begin{center}
+    \includegraphics[scale=0.65,angle=0]{isis_93_mtmerge.pdf}%
+  \end{center}
 \end{frame}
 
 \begin{frame}

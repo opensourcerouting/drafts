@@ -18,7 +18,13 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{Context}
+  \frametitle{Changes from -02 to -03}
+  {\Large Completely removed "critical sub-TLV"\\[12pt]
+  now using RFC5120 multitopology routing}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Context refresher}
   \includegraphics[scale=0.45,angle=-90]{intro_topo.pdf}%
   \vspace{5mm}
   $\Rightarrow$ ensuring correct exit taken based on packet source address
@@ -96,6 +102,14 @@
   \begin{center}
     \includegraphics[scale=0.65,angle=0]{isis_93_mtmerge.pdf}%
   \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Other relevant details}
+  \begin{itemize}
+    \item separate D/S MTID per "parent" topology
+    \item draft contains appendix with some (shallow) correctness considerations
+  \end{itemize}
 \end{frame}
 
 \begin{frame}

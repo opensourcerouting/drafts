@@ -1,4 +1,7 @@
 *.pdf
+!isis*.pdf
+!intro*.pdf
+!lookup*.pdf
 *.aux
 *.log
 *.nav

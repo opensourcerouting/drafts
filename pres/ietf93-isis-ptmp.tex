@@ -46,13 +46,13 @@
 
   Use PtP on broadcast ala RFC 5309 (P2P over LAN), but support more than one adjacency.
 
-  \vspace{5mm}
-  \includegraphics[scale=0.65,angle=0]{isis_93_p2mplink.pdf}%
+%  \vspace{5mm}
+%  \includegraphics[scale=0.65,angle=0]{isis_93_p2mplink.pdf}%
   \vspace{5mm}
 
   \begin{itemize}
     \item need to demultiplex received packets, adjacencies will interfere with each other
-    \item want some discovery protocol
+    \item need mechanism to create adjacency / want some discovery protocol
   \end{itemize}
 \end{frame}
 
@@ -68,6 +68,9 @@
     \item P2MP Hello w/o RFC5303 3-way Adj TLV for discovery
     \item P2MP Hello with RFC5303 3-way Adj TLV for adjacency maintenance
   \end{itemize}
+
+  Note autodiscovery is not functionally required, draft specifies adding known
+  neighbor addresses from other sources.
 \end{frame}
 
 \begin{frame}
@@ -79,11 +82,48 @@
 \begin{frame}
   \frametitle{PDUs and TLVs}
 
+  No new TLVs added by this draft.
+
+  \vspace{3mm}
+
+  New P2MP IIH PDU added by this draft:
   \begin{itemize}
-    \item no new TLVs added by this draft
-    \item packets demultiplexed by packet source address
-    \item packets sent to neighbor's unicast destination address
+    \item separate P2MP Hello to avoid confused non-P2MP PtP speakers
+    \item same fields as LAN / PtP Hellos, without LAN ID or Local Circuit ID
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{IIHs}
+
+  \includegraphics[scale=0.42,angle=0]{isis_93_p2mppdu.pdf}%
+\end{frame}
+
+\begin{frame}
+  \frametitle{Alternate approach}
+
+  Instead of adding a P2MP PDU type, LAN IIHs (or ISHs) could be used for
+  discovery and PtP IIHs for pseudocircuit hellos.
+
+  \vspace{3mm}
+
+  $\Rightarrow$ LAN IIHs would contain a new P2MP capability TLV to indicate
+  support, and would not list IS neighbors.
+
+  \vspace{3mm}
+
+  $\Rightarrow$ On the pseudocircuit level, regular PtP IIHs would be used
+  without change, though with unicast destination addresses.
+
+  \vspace{3mm}
+
+  If a legacy PtP neighbor's address is added some way (e.g.
+  manual config), a P2MP$\leftrightarrow$PtP adjacency would work correctly.
+
+  \vspace{3mm}
+
+  (Thanks to Chris Hopps for feedback this slide is based on.)
+
 \end{frame}
 
 \begin{frame}
@@ -101,17 +141,36 @@
 
   \begin{itemize}
     \item {\Large P2MP is invisible to rest of IS-IS domain}
-    \item SPF calculation sees a bunch of PtP links
-    \item can be deployed on per-link basis
+    \item topology contains a bunch of PtP links
+    \item can be deployed incrementally, enabled on per-link basis
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Caveats}
+
+  \begin{itemize}
+    \item no requirement for full mesh, system can choose not to form some adjacencies
+    \begin{itemize}
+      \item application: 802.11 clients can choose to only become adjacent with AP, since all frames are relayed by the AP anyway
+    \end{itemize}
+    \item no requirement for transitive reachability
+    \begin{itemize}
+      \item theoretical mesh support - experience from OSPF-MDR shows this is not a good idea
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
 \begin{frame}
   \frametitle{Next steps}
   \begin{itemize}
+    \item WG feedback
+    \begin{itemize}
+      \item especially on creating new P2MP IIH \\
+            vs. using LAN + PtP IIHs
+    \end{itemize}
     \item fixing TODOs in draft
-    \item support multicast LSP/CSNP/PSNP on P2MP?
-    \item feedback?
+    \item spend cycles on multicast LSP/CSNP/PSNP on P2MP
   \end{itemize}
 \end{frame}
 

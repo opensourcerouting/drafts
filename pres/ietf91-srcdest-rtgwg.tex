@@ -1,0 +1,122 @@
+\documentclass[14pt]{beamer}
+%\usetheme{Singapore}
+\usecolortheme{ietf91color}
+
+\mode<presentation>
+\title{Extending IP Route Lookup \\ \& Dst/Src Routing}
+\subtitle{%
+  draft-baker-rtgwg-src-dst-routing-use-cases-02\\%
+  draft-lamparter-rtgwg-routing-extra-qualifiers-00\\%
+  draft-lamparter-rtgwg-dst-src-routing-00%
+}
+\author{%
+  Fred Baker\\%
+  \underline{David Lamparter}%
+}
+\date{IETF 91, Honolulu}
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \frametitle{Context}
+  \begin{itemize}
+  \item homenet multiple uplinks vs. BCP 38 filtering\\%
+    cf. draft-baker-rtgwg-src-dst-routing-use-cases (IETF88)
+  \item draft-baker-ipv6-ospf-dst-src-routing \&\\%
+    draft-baker-ipv6-isis-dst-src-routing\\%
+    overlap in describing forwarding behaviour
+  \item implementations exists
+    (HNCP or IS-IS control plane, Linux kernel forwarding)
+  \item need to document to ensure clarity / interop
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Untangling things}
+  draft-lamparter-rtgwg-routing-extra-qualifiers:
+  \begin{itemize}
+    \item order-only IANA registry for lookup keys
+    \item table has 1 initial entry: ``destination LPM''
+    \begin{itemize}
+      \item future drafts (e.g. flowlabel routing) may add entries in any place
+        (front, middle, behind)
+    \end{itemize}
+  \end{itemize}
+  draft-lamparter-rtgwg-dst-src-routing:
+  \begin{itemize}
+    \item adds ``source LPM'' \underline{behind} destination LPM
+    \begin{itemize}
+      \item this is not policy routing
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Lookup behaviour}
+drafts specify \underline{\color{red}continuing to less specific destination} matches
+if no entry produces a source match\\
+(i.e. modeled as one integral lookup process, not 2 separate steps)\\[1cm]
+This is noted as general principle -- stopping lookup can always be done
+by inserting an unreachable or blackhole route.
+\end{frame}
+
+\begin{frame}
+\frametitle{Lookup behaviour}
+\includegraphics<1>[height=10cm,angle=-90]{lookup_without_ur.pdf}%
+\includegraphics<2>[height=10cm,angle=-90]{lookup_with_ur.pdf}%
+\end{frame}
+
+\begin{frame}
+  \frametitle{Open topics: recursive routes}
+
+  Most dst-src work happened in homenet -- little concern given to interop
+  with non-homenet.\\[5mm]
+  \begin{itemize}
+    \item Recursive routes where nexthop matches D/S route
+    \begin{itemize}
+      \item 2001:db8::/32 via 2001:db8:abcd::1 recursive
+      \item 2001:db8:abcd::/48 src 2001:db8:1234::/48 via A
+      \item 2001:db8:abcd::/48 src 2001:db8:5678::/48 via B
+    \end{itemize}
+    \item questionable relevance?
+    \item multiple routes installed?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Open topics: Unicast RPF checks}
+
+  \begin{itemize}
+    \item Filtering incoming packets based on routes with dst/src reversed
+    \item draft: ``flip source too, or don't check it''
+    \begin{itemize}
+      \item other new qualifiers (e.g. flowlabel)\\may need more thought
+   \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Open topics: Multicast RPF lookup}
+
+  \begin{itemize}
+    \item no source address available when doing MRIB lookups
+    \item draft currently says\\``completely ignore D/S routes''
+    \item may want pim WG feedback
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Further path?}
+  \begin{itemize}
+    \item WG-adopt use-case document?
+    \item proceed with routing-extra-qualifiers \& dst-src-routing in rtgwg?
+    \begin{itemize}
+      \item this is on the charter borderline\\(extending hop-by-hop routing)
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\end{document}

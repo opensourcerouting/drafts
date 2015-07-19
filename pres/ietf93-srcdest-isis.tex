@@ -83,16 +83,28 @@
 
 \begin{frame}
   \frametitle{Route installation}
+  \begin{itemize}
+    \item MT SPF calculations as usual: separate for IPv6 default and D/S topologies
+    \item routes are installed in the same table
+    \item no overlap between the two sources
+    \item D/S extended longest-match fulfills its purpose
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Route installation}
   \begin{center}
     \includegraphics[scale=0.65,angle=0]{isis_93_mtmerge.pdf}%
   \end{center}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Further path?}
+  \frametitle{Next steps}
   \begin{itemize}
-    \item need to clear topic and proceed
-    \item code is running (w/o interop)
+    \item hoping to get (positive) feedback on MT approach here
+    \item expecting to do -04 to address comments
+    \item updating implementations to actually use MT
+    \item asking for WG adoption at between now and IETF 94
   \end{itemize}
 \end{frame}
 

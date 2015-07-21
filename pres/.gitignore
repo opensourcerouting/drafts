@@ -2,6 +2,7 @@
 !isis*.pdf
 !intro*.pdf
 !lookup*.pdf
+!ietf_93_*.pdf
 *.aux
 *.log
 *.nav

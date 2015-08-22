@@ -220,6 +220,7 @@
     </references>
     <references title="Informative References">
       &RFC3307;
+      &RFC5237;
 
       <reference anchor='I-D.ietf-isis-wg-over-ip'>
         <front>

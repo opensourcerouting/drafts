@@ -44,6 +44,12 @@
         <email>david@opensourcerouting.org</email>
       </address>
     </author>
+    <author initials="C." surname="Hopps" fullname="Christian E. Hopps">
+      <organization>Deutsche Telekom</organization>
+      <address>
+        <email>chopps@chopps.org</email>
+      </address>
+    </author>
 
     <date day="3" month="July" year="2015" />
 
@@ -81,13 +87,13 @@
 
     <?rfc needLines="5" ?>
 
-    <section anchor="pseudocirc" title="P2MP Pseudocircuits">
+    <section anchor="pseudocirc" title="Point-To-Multipoint Pseudocircuits">
       <t>In place of <xref target="CLNS">ISO 8473 call management</xref>
         establishing sessions, this document establishes pairwise
         "pseudocircuits" between two IS on a common medium.  Multiple such
-        pseudocircuits can normally exist on one P2MP interface.</t>
+        pseudocircuits can normally exist on one P2MP (Point-To-Multipoint) interface.</t>
       <t>Each pseudocircuit operates, aside from subnetwork attachment
-        procedures, exactly as a PtP link.</t>
+        procedures, exactly as a P2P (Point-to-Point) link.</t>
       <t>It should be noted that while the Multicast autodiscovery
         mechanism requires broadcast capability, no other part of the
         protocol does.  The P2MP interface type can be used on
@@ -106,13 +112,10 @@
           participant on a link MUST have an unique SNPA address on that
           link.</t>
 
-        <t>As pseudocircuits are dynamic in nature, they must be created and
-          destroyed as needed.</t>
-
         <section title="Representation in LSPs">
-          <t>Pseudocircuits are represented in LSPs as a regular PtP circuit
+          <t>Pseudocircuits are represented in LSPs as a regular P2P circuit
             would be.  As a result, their treatment in SPF calculations is also
-            identical to PtP circuits.</t>
+            identical to P2P circuits.</t>
         </section>
 
         <section title="Forwarding">
@@ -127,20 +130,18 @@
       </section>
 
       <section title="Neighbor IS discovery">
-        <t>The discovery machinery produces as output a "candidate neighbor
-          list," which is a list of possible neighbor's SNPAs and is
-          maintained per P2MP interface.  Additional information (metric,
-          etc.) MAY be associated with the SNPA, but this is not part of the
-          discovery mechanism.</t>
-        <t>The candidate neighbor list is conceptual in nature; adding and
-          removing entries results in pseudocircuit creation and deletion.  It
-          need not be implemented as an actual list.</t>
-        <t>The list is the union of the result of each of the following sources
-          of neighbor information. A neighbor may be listed by multiple
-          sources: it MUST NOT be removed while any source still lists it.</t>
-        <t>The IS-IS implementation SHOULD provide user configuration to
-          disable individual mechanisms and/or filter candidate neighbors both
-          as a security and as misconfiguration preventing measure.</t>
+        <t>The discovery machinery produces as output a "candidate
+        neighbor list," which is a list of possible neighbor's SNPAs
+        and is maintained per P2MP interface. Adding and removing
+        entries to the candidate neighbor list results in
+        pseudocircuit creation and deletion.</t>
+
+        <t>A neighbors presence on the candidate list may be supported
+        by multiple sources. These sources are described in the
+        following sections</t>
+
+        <t>The IS-IS implementation SHOULD provide user configuration
+        to disable or filter individual sources.</t>
 
         <section title="Manual configuration">
           <t>A list of neighbor IS MAY be configured by the user, providing
@@ -155,27 +156,38 @@
 
         <section title="Multicast autodiscovery">
           <t>For broadcast capable networks, this document defines an
-            autodiscovery mechanism based on multicasting Hello packets.
-            This mechanism MAY be disabled by the user, but MUST be
-            implemented for all lower layer link types with (limited or full)
-            broadcast capability.</t>
-          <t>Multicast autodiscovery P2MP Hello PDUs are distinguished by not
-            containing a RFC5303 Three-Way Adjacency TLV.  Receiving such a
-            Hello places the sending IS on the candidate list for as long as
-            the PDU's holdtime indicates.</t>
+          autodiscovery mechanism based on multicasting Hello packets.  This
+          mechanism MAY be disabled by the user, but MUST be implemented for
+          all lower layer link types with (limited or full) broadcast
+          capability.</t>
+
+          <t>A multicast autodiscovery packet is defined as a P2P IIH
+          which is multicast over the LAN media as defined in <xref
+          target="RFC5309"/>. Additionally it must include a Three-Way
+          Adjacency TLV as defined in <xref target="RFC5303"/>
+          indicating the circuit is in the DOWN state (i.e., 1 octet
+          of value indicating the DOWN state). Receiving such a Hello
+          places the sending IS on the candidate list for as long as
+          the PDU's holdtime indicates.</t>
+
+
           <t>A system MAY implement a receive-only passive multicast
-            autodiscovery mode where it adds candidates (forms pseudocircuits)
-            on receiving P2MP Hello PDUs, but does not send such PDUs
-            itself.</t>
+          autodiscovery mode where it adds candidates (forms pseudocircuits)
+          on receiving autodiscovery PDU, but does not send such PDUs
+          itself.</t>
+
           <t>If either passive or full multicast autodiscovery is enabled,
-            receiving a P2MP Hello PDU with a Three-Way Adjacency TLV also adds
-            the neighbor to the candidate list.</t>
+          receiving a unicast autodiscovery PDU also adds the neighbor to
+          the candidate list.</t>
+
+          <t>[Ed: XXX chopps: should we consider automatic application of mesh
+          groups <xref target="RFC2973"/> as well?]</t>
         </section>
       </section>
 
       <section title="Adjacency formation">
-        <t>Since there is no underlying protocol layer
-          partitioning the link into actual PtP circuits in this case, additional handling
+        <t>Since there may be no underlying protocol layer
+          partitioning the link into actual P2P circuits in this case, additional handling
           is required on bringing up the individual pseudocircuit
           adjacencies.</t>
         <t>To prevent different pseudocircuits from "bleeding" into each other,
@@ -183,162 +195,24 @@
           on all P2MP pseudocircuits, with changes as follows:
           <list style="symbols">
             <t>Received IIH PDUs on P2MP pseudocircuits without the
-              Point-to-Point Three-Way Adjacency option MUST be discarded.  The
-              TLV is not optional on pseudocircuit adjacencies but rather
-              mandatory.</t>
+              Point-to-Point Three-Way Adjacency option MUST be discarded.</t>
           </list>
         </t>
       </section>
 
       <section title="Pseudocircuit teardown">
-        <t>Pseudocircuits are destroyed when their PtP state machine has
-          transitioned into "Down" state and they are no longer listed as
-          candidates by any discovery mechanism.  The conditions for
-          pseudocircuit removal are thus:
-          <list style="symbols">
-            <t>PtP adjacency timeout functionality (<xref target="IS-IS">IS-IS
-                section 8.2.6</xref>) has moved the pseudocircuit to Down
-              state, or it never moved out of Down state</t>
-            <t>The holdtime of any multicast autodiscovery P2MP Hello PDUs has
-              expired.</t>
-            <t>Manual configuration or lower layer autodiscovery no longer
-              lists the neighbor.</t>
-          </list>
-          As long as a pseudocircuit is present, its PtP state machine
-          will, as expected for PtP circuits, trigger transmission of further
-          Hello PDUs, even when it is in Down state.</t>
-      </section>
-    </section>
+        <t>Pseudocircuits are destroyed when their P2P state machine has
+        transitioned into "Down" state and they are no longer supported as
+        a candidate by any discovery mechanism.</t>
 
-    <section anchor="processing" title="PDU generation and processing">
-      <section title="LSP, CSNP, PSNP and all other non-Hello PDU types">
-        <t>All PDU types that are not Hello PDUs, e.g. L1/L2 LSP PDUs, L1/L2
-          CSNP/PSNP PDUs, FS-LSP, FS-CSNP and FS-PSNP PDUs are processed on
-          P2MP interfaces by dispatching them to an individual pseudocircuit
-          by looking up the PDU's source address in the interface's list of
-          P2MP pseudocircuits.  This includes all functions defined
-          in <xref target="IS-IS">Section 7 of ISO/IEC 10589:2002</xref> and
-          PDUs added in <xref target="RFC7176"/> and <xref
-            target="RFC7356"/>.</t>
-        <t>While possible, this document does not suggest sending such PDUs to
-          multicast destinations.  All systems MUST send these PDUs to unicast
-          lower layer destinations so that they are received only by the
-          pseudocircuit's neighbor system.  However, systems SHOULD NOT check
-          the destination address on receipt to allow future optimisations.</t>
+        <t>As long as a pseudocircuit is present, its P2P state machine
+        will, as expected for P2P circuits, trigger transmission of further
+        Hello PDUs, even when it is in Down state.</t>
       </section>
-      <section title="LAN and P2P Hellos">
-        <t>Received LAN and P2P Hello PDUs MUST be discarded when received on
-          an interface configured for P2MP operation.  The system MAY notify
-          the operator of such a misconfiguration.</t>
-        <t>TODO: hitless migration possible?</t>
-      </section>
-      <section title="P2MP Hello PDUs">
-        <t>P2MP Hello PDUs are divided in two categories depending on the
-          presence of a RFC5303 Three-way Adjacency TLV.</t>
-        <section title="Without Three-way Adjacency TLV">
-          <t>For each P2MP interface that has the multicast autodiscovery
-            mechanism enabled, a system periodically sends P2MP Hello PDUs
-            without Three-way Adjacency TLV to a lower layer specific multicast
-            address.
-            The periodic timer SHOULD be configurable and is subject to jitter
-            per <xref target="IS-IS">Section 10.1 of ISO/IEC 10589:2002</xref>.
-          </t>
-          <t>On receipt, such PDUs are not processed on any pseudocircuit's PtP 
-            state machine.  They are processed on pseudocircuit management
-            level as described in <!-- xref target=""/ -->:
-            <list style="symbols">
-              <t>If no pseudocircuit matches the PDU's lower layer source
-                address, one is created for that address</t>
-              <t>The pseudocircuit is held in existence at least until the
-                PDU's holdtime expires.</t>
-            </list>
-          </t>
-          <t>No information other than the neighbor's SNPA is carried from the
-            PDU onto the pseudocircuit, thus most TLVs that are normally valid
-            in Hellos become pointless.  However, all TLVs that affect PDU
-            processing (in particular authentication TLVs) are processed
-            normally.</t>
-          <t>On IEEE 802 lower layers that support 48bit MAC addresses, the
-            AllIntermediateSystems multicast address (09-00-2B-00-00-05) is
-            used as destination when sending these PDUs.</t>
-        </section>
-        <section title="With Three-way Adjacency TLV">
-          <t>P2MP Hello PDUs with a RFC5303 Three-way Adjacency TLV are both
-            processed and generated by the PtP Hello state machine (<xref
-              target="IS-IS">Section 8.2 of ISO/IEC 10589:2002</xref>) of their
-            associated pseudocircuit.</t>
-          <t>This implies that received PDUs are dispatched by looking up their
-            source SNPA address among the pseudocircuits associated with the
-            receiving interface (possibly creating a pseudocircuit).</t>
-          <t>For Hello PDUs sent by the pseudocircuit's PtP Hello state
-            machine, the destination SNPA address is set to the pseudocircuit's
-            neighbor SNPA address.</t>
-          <t>TLV validity and processing is exactly as for PtP Hellos.</t>
-        </section>
-      </section>
-    </section>
-
-    <section anchor="encoding" title="PDU encoding">
-      <t>(Note this section follows ISO 10589 section 9, particularly in
-        numbering bits starting at 1 for the LSB.)</t>
-      <section title="P2MP Hello PDU">
-        <figure><preamble>Figure 1: P2MP Hello PDU format</preamble>
-          <artwork>
- MSB                         LSB MSB                         LSB
-  8   7   6   5   4   3   2   1   8   7   6   5   4   3   2   1
-+---+---+---+---+---+---+---+---+ - + - + - + - + - + - + - + - +
-| 0x83 (Protocol Discriminator) |
-+---+---+---+---+---+---+---+---+
-|       Length Indicator        |
-+---+---+---+---+---+---+---+---+
-|  0x01 (Version/ID Extension)  |
-+---+---+---+---+---+---+---+---+
-|           ID Length           |
-+---+---+---+---+---+---+---+---+
-| R   R   R | TBD-PDU (PDU Type)|
-+---+---+---+---+---+---+---+---+
-|        0x01 (Version)         |
-+---+---+---+---+---+---+---+---+
-| R   R   R   R   R   R   R   R |
-+---+---+---+---+---+---+---+---+
-|    Maximum Area Addresses     |
-+---+---+---+---+---+---+---+---+
-| R   R   R   R   R   R |CircTyp|
-+---+---+---+---+---+---+---+---+
-|           Source ID           |
-:          (ID Length)          :
-:                               :
-+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-|                          Holding Time                         |
-+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-|                           PDU Length                          |
-+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+---+
-:                   Variable Length Fields (TLVs)               :
-:                                                               :
-</artwork>
-        </figure>
-        <t>All fields function exactly as for Point-to-Point IS-IS hello PDUs,
-          as specified in <xref target="IS-IS">Section 9.7 of ISO/IEC
-            10589:2002</xref>.</t>
-        <t>Note the Local Circuit ID field is absent.  Its function is replaced
-          by <xref target="RFC5303"/>.</t>
-      </section>
-    </section>
-
-    <section anchor="IANA" title="IANA Considerations">
-      <t>IANA is requested to allocate a value from the "IS-IS PDU Registry" as
-        follows:</t>
-      <t><list style="hanging">
-          <t hangText="Type:">TBD-PDU</t>
-          <t hangText="Description:">P2MP-HELLO-PDU</t>
-          <t hangText="Reference:">This document</t>
-      </list></t>
-      <t>Applicability of sub-TLVs for this PDU (per "TLV Codepoints Registry")
-        is per the "IIH" column.</t>
     </section>
 
     <section anchor="model" title="Configuration model">
-      <t>TODO: YANG model.</t>
+      <t>TODO: YANG model -- maybe we can just get them to include us :).</t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
@@ -350,7 +224,8 @@
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
-      <t>TODO.</t>
+      <t>Acknowledge Les Ginsberg for pointing out that P2P Hellos
+      rather than LAN hellos could and should be used.</t>
     </section>
   </middle>
 
@@ -371,8 +246,8 @@
         <seriesInfo name="ISO/IEC" value="10589:2002, Second Edition"/>
       </reference>
 
-      <?rfc include="reference.RFC.2119"?>
       <?rfc include="reference.RFC.5303"?>
+      <?rfc include="reference.RFC.5309"?>
     </references>
 
     <references title="Informative References">
@@ -401,6 +276,75 @@
       <?rfc include="reference.RFC.7176"?>
       <?rfc include="reference.RFC.7356"?>
     </references>
+    <section anchor="Misconfig" title="Misconfiguration With P2P over LAN">
+      <t>As this specification utilizes the same initial P2P IIH PDU
+      as <xref target="RFC"/> for discovering neighbors it is possible
+      that it could interact with an adjacent (XXX better word
+      co-connected/participatin/...?) LAN interface that has been
+      mis-configured for P2P over LAN operation. We examine the
+      possible results given this scenario</t>
+
+      <t>There are 4 cases to consider, whether or not the neighbor
+      acts on our subsequent unicast PDUs and whether it has 3-way
+      adjacency TLV configured. In all cases the neighbor will receive
+      our discovery multicast DOWN state P2P IIH PDU and may enter
+      INIT or UP state. We examine the cases in the following
+      sections.</t>
+
+      <t>In none of the cases will a P2MP router consider itself UP
+      with the misconfigured P2P router and so will not advertise the
+      adjacency. As only 1/2 of the adjacency will be announced the
+      2-way connectivity check will fail, and no packets will forward
+      between the 2 routers.</t>
+
+      <t>Every misconfiguration case is detectable (as IIHs missing
+      3-way or IIHs multicast with non DOWN 3-way TLV will be seen). A
+      P2MP router SHOULD use whatever means appropriate to alert the
+      operator to the misconfiguration.</t>
+
+      <section anchor =="Mcast3Way" title="3-Way Enabled Unicast Ignored>
+        <t>In the case where the neighbor has 3-way enabled and
+        unicast packets are ignored the neighbor will enter 3-way INIT
+        state with the first P2P discovery IIH it receives. It will
+        ignore other routers P2P discovery IIH while in this state (ref
+        p2poe). It will never progress to the UP state as it will
+        never receive a P2P IIH (unicast) indicating it has been seen.</t>
+
+        <t>The result is that no adjacency will be seen on this link.</t>
+      </section>
+      <section anchor =="Ucast3Way" title="3-Way Enabled Unicast Processed>
+        <t>In the case where the neighbor has 3-way enabled and
+        unicast packets are processed the neighbor will enter 3-way
+        INIT state with the first P2P discovery IIH it receives. It
+        will ignore other routers P2P discovery IIH while in this
+        state (ref p2poe). We will ignore the neighbors "reply" P2P
+        IIH indicating INIT state because it is multicast instead of
+        unicast, and so will not enter into the UP state.</t>
+
+        <t>Likewise we may enter INIT state with the P2P neighbor and
+        begin to send unicast P2P IIHs indicating this. This will
+        cause the neighbor to enter the UP state; however, our
+        subsequent P2P discovery IIH indicating DOWN will bring the
+        adjacency down.</t>
+
+        <t>The result is that a flapping (and changing) adjacency may
+        be advertised by the neighbor</t>
+      </section>
+      <section anchor =="2Way" title="3-Way Disabled">
+        <t>If a neighbor is not configured for 3-way operation,
+        regardless of unicast processing, a P2MP router will never
+        transition to INIT or UP state with it as it's IIH
+        lacks a 3-way TLV.<t>
+
+        <t>The neighbor neighbor will transition to the UP state with
+        the first P2MP discovery IIH it receives which may be us. It
+        will discard P2MP discovery PDUs from other P2MP neighbors
+        (according to section 4.5 of P2PoLAN).</t>
+
+        <t>The result is that a steady adjacency may be advertised by
+        the neighbor</t>
+      </section>
+    </section>
   </back>
 </rfc>
 <!-- vim: sw=2 ts=2 et

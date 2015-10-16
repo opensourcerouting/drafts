@@ -58,7 +58,7 @@
       </address>
     </author>
 
-    <date year="2015" month="June" day="27"/>
+    <date year="2015" month="October" day="17"/>
     <area>Routing</area>
     <workgroup>rtgwg</workgroup>
 
@@ -290,9 +290,12 @@ recursive resolution result:
 
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
-          <t hangText="Initial Version:">April 2015: merged
-            routing-extra-qualifiers draft, new ordering rationale section</t>
-          <t hangText="Initial Version:">October 2014</t>
+          <t hangText="October 2015 [-00]:">
+            renamed to draft-ietf-rtgwg-dst-src-routing-00, no content changes
+            from draft-lamparter-rtgwg-dst-src-routing-01.</t>
+          <t hangText="April 2015 [-01]:">merged routing-extra-qualifiers
+            draft, new ordering rationale section</t>
+          <t hangText="October 2014 [-00]:">Initial Version</t>
         </list></t>
     </section>
   </middle>

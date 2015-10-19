@@ -8,7 +8,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-lamparter-isis-p2mp-00" ipr="trust200902">
+<rfc category="std" docName="draft-lamparter-isis-p2mp-01" ipr="trust200902">
   <front>
     <!-- The abbreviated title is used in the page header - it is only necessary if the 
          full title is longer than 39 characters -->
@@ -51,7 +51,7 @@
       </address>
     </author>
 
-    <date day="3" month="July" year="2015" />
+    <date day="19" month="October" year="2015" />
 
     <area>Routing</area>
 
@@ -229,6 +229,14 @@
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t>Acknowledge Les Ginsberg for pointing out that P2P Hellos
       rather than LAN hellos could and should be used.</t>
+    </section>
+
+    <section anchor="log" title="Change Log">
+      <t><list style="hanging">
+          <t hangText="October 2015 [-01]:">Moved from new P2MP Hello PDU to
+            using existing P2P PDU.</t>
+          <t hangText="July 2015 [-00]:">Initial Version</t>
+        </list></t>
     </section>
   </middle>
 

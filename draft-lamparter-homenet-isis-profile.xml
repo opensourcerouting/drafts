@@ -8,7 +8,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-lamparter-homenet-isis-profile-00" ipr="trust200902">
+<rfc category="std" docName="draft-lamparter-homenet-isis-profile-01" ipr="trust200902">
   <front>
     <title abbrev="Homenet IS-IS Profile"
                   >Homenet IS-IS Profile</title>
@@ -25,7 +25,7 @@
       </address>
     </author>
 
-    <date day="22" month="July" year="2015" />
+    <date day="19" month="October" year="2015" />
 
     <area>Internet Engineering Task Force</area>
 
@@ -99,11 +99,12 @@
           <t><xref target="I-D.liu-isis-auto-conf"/>, IS-IS Autoconfiguration</t>
           <t><xref target="I-D.baker-ipv6-isis-dst-src-routing"/>, IS-IS IPv6 Source/Destination Routing</t>
           <t><xref target="I-D.lamparter-isis-p2mp"/>, IS-IS Point to Multipoint operation</t>
-          <t><xref target="I-D.franke-isis-over-ipv6"/>, IS-IS over IPv6</t>
+          <t><xref target="I-D.franke-isis-over-ipv6"/>, IS-IS over IPv6 (Note:
+            controversial/under consideration/feedback needed)</t>
         </list>
       </t>
       <t>And, finally, IPv6 source/destination routing behavior as specified in
-        <xref target="I-D.lamparter-rtgwg-dst-src-routing"/>.</t>
+        <xref target="I-D.ietf-rtgwg-dst-src-routing"/>.</t>
     </section>
 
     <section anchor="parameters" title="Parameter choices">
@@ -158,7 +159,7 @@
       <?rfc include="reference.RFC.5308"?>
       <?rfc include="reference.I-D.liu-isis-auto-conf"?>
       <?rfc include="reference.I-D.baker-ipv6-isis-dst-src-routing"?>
-      <?rfc include="reference.I-D.lamparter-rtgwg-dst-src-routing"?>
+      <?rfc include="reference.I-D.ietf-rtgwg-dst-src-routing"?>
       <?rfc include="reference.I-D.lamparter-isis-p2mp"?>
       <?rfc include="reference.I-D.franke-isis-over-ipv6"?>
     </references>

@@ -93,7 +93,7 @@
   <middle>
     <section title="Introduction">
       <t>This specification defines how to exchange <xref
-          target="I-D.lamparter-rtgwg-dst-src-routing">destination/source
+          target="I-D.ietf-rtgwg-dst-src-routing">destination/source
           routing</xref> information in <xref target="RFC5308">IS-IS for
           IPv6</xref> routing environments.  To this extent, a new sub-TLV for
         an <xref target="RFC2460">IPv6</xref> Source Prefix is added, and 
@@ -101,7 +101,7 @@
         address compatibility and isolation concerns.</t>
 
       <t>The router MUST implement the Destination/Source Routing mechanism
-      described in <xref target="I-D.lamparter-rtgwg-dst-src-routing"/>.
+      described in <xref target="I-D.ietf-rtgwg-dst-src-routing"/>.
       This implies not simply routing "to a destination", but routing "to
       that destination AND from a specified source".
       The obvious application is egress routing, as required for a multihomed
@@ -332,7 +332,7 @@ IPv6 management    5       TBD-MT5
       <t>The same injection and resource exhaustion attack scenarios as with
         all routing protocols apply.</t>
       <t>Security considerations from <xref
-          target="I-D.lamparter-rtgwg-dst-src-routing"/> are particularly
+          target="I-D.ietf-rtgwg-dst-src-routing"/> are particularly
         relevant to this document, in particular the possibility to inject
         (more) specific routes to hijack traffic.</t>
     </section>
@@ -374,7 +374,7 @@ IPv6 management    5       TBD-MT5
 
       <?rfc include="reference.RFC.5308" ?>
 
-      <?rfc include="reference.I-D.lamparter-rtgwg-dst-src-routing"?>
+      <?rfc include="reference.I-D.ietf-rtgwg-dst-src-routing"?>
     </references>
 
     <references title="Informative References">

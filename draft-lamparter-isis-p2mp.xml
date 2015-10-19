@@ -273,12 +273,13 @@
         <seriesInfo name="ISO/IEC" value="8473-1:1998"/>
       </reference>
 
+      <?rfc include="reference.RFC.2973"?>
       <?rfc include="reference.RFC.7176"?>
       <?rfc include="reference.RFC.7356"?>
     </references>
     <section anchor="Misconfig" title="Misconfiguration With P2P over LAN">
       <t>As this specification utilizes the same initial P2P IIH PDU
-      as <xref target="RFC"/> for discovering neighbors it is possible
+      as <!-- xref target="RFC" --> for discovering neighbors it is possible
       that it could interact with an adjacent (XXX better word
       co-connected/participatin/...?) LAN interface that has been
       mis-configured for P2P over LAN operation. We examine the
@@ -302,7 +303,7 @@
       P2MP router SHOULD use whatever means appropriate to alert the
       operator to the misconfiguration.</t>
 
-      <section anchor =="Mcast3Way" title="3-Way Enabled Unicast Ignored>
+      <section anchor="Mcast3Way" title="3-Way Enabled Unicast Ignored">
         <t>In the case where the neighbor has 3-way enabled and
         unicast packets are ignored the neighbor will enter 3-way INIT
         state with the first P2P discovery IIH it receives. It will
@@ -312,7 +313,7 @@
 
         <t>The result is that no adjacency will be seen on this link.</t>
       </section>
-      <section anchor =="Ucast3Way" title="3-Way Enabled Unicast Processed>
+      <section anchor="Ucast3Way" title="3-Way Enabled Unicast Processed">
         <t>In the case where the neighbor has 3-way enabled and
         unicast packets are processed the neighbor will enter 3-way
         INIT state with the first P2P discovery IIH it receives. It
@@ -330,11 +331,11 @@
         <t>The result is that a flapping (and changing) adjacency may
         be advertised by the neighbor</t>
       </section>
-      <section anchor =="2Way" title="3-Way Disabled">
+      <section anchor="twoWay" title="3-Way Disabled">
         <t>If a neighbor is not configured for 3-way operation,
         regardless of unicast processing, a P2MP router will never
         transition to INIT or UP state with it as it's IIH
-        lacks a 3-way TLV.<t>
+        lacks a 3-way TLV.</t>
 
         <t>The neighbor neighbor will transition to the UP state with
         the first P2MP discovery IIH it receives which may be us. It

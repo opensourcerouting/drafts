@@ -38,7 +38,7 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-baker-ipv6-isis-dst-src-routing-03"
+<rfc category="std" docName="draft-baker-ipv6-isis-dst-src-routing-04"
      ipr="trust200902">
   <front>
     <title abbrev="IS-IS Source/Destination Routing">IPv6 Source/Destination
@@ -78,7 +78,7 @@
       </address>
     </author>
 
-    <date/>
+    <date day="19" month="October" year="2015" />
 
     <area>Internet Engineering Task Force</area>
 
@@ -267,10 +267,21 @@ IPv6 management    5       TBD-MT5
               MTID TBD-MT5 to carry associated reachability TLVs.</t>
         </list></t>
 
-        <t>It should be noted that implementing M-ISIS is thus a prerequirement
-          for supporting the protocol outlined in this document.  Even
-          installations that previously used only MTID 0 (i.e. no M-ISIS) will
-          need to start using MTID TBD-MT0.</t>
+        <t>Note that the different topology ID is the sole and only mechanism
+          of both capability detection and backwards compatibility.  D/S
+          routing will operate correctly if D/S routing information is put in
+          the same topology as non-D/S information, but adding an IS that does
+          not support D/S routing will then -undetectably- lead to incorrect
+          routing decisions, possibly including loops.</t>
+
+        <t>As this compatibility mechanism is not considered optional, M-ISIS
+          MUST therefore be implemented for supporting the protocol outlined in
+          this document.  Even installations that previously used only MTID 0
+          (i.e. no M-ISIS) would need to start using MTID TBD-MT0.</t>
+
+        <t>Systems that use topology IDs different than the values reserved by
+          IANA should apply the considerations from this section
+          analogously.</t>
       </section>
     </section>
 
@@ -343,7 +354,8 @@ IPv6 management    5       TBD-MT5
     </section>
 
     <section anchor="Acknowledgements" title="Acknowledgements">
-      <t>(TODO)</t>
+      <t>Thanks to Les Ginsberg, Chris Hopps and Acee Lindem for valuable
+        feedback on this document.  (TODO: incomplete.)</t>
     </section>
   </middle>
 
@@ -431,8 +443,11 @@ IPv6 management    5       TBD-MT5
 
           <t hangText="Added MTR:">August 2014</t>
 
-          <t hangText="Split into 4 drafts:">October 2014</t>
-          <t hangText="Dropped 'Critical Sub-TLV' drafts">June 2015</t>
+	  <t hangText="Split into 4 drafts:">October 2014</t>
+
+	  <t hangText="Dropped 'Critical Sub-TLV' drafts">June 2015</t>
+
+          <t hangText="MT clarifications">October 2015</t>
         </list></t>
     </section>
   </back>

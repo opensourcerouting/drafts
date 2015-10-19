@@ -2,6 +2,7 @@
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
 <!ENTITY RFC2119 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml">
 <!ENTITY RFC3307 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3307.xml">
+<!ENTITY RFC5082 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5082.xml">
 <!ENTITY RFC5237 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5237.xml">
 <!ENTITY RFC5308 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5308.xml">
 ]>
@@ -13,7 +14,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-franke-isis-over-ipv6" ipr="trust200902">
+<rfc category="std" docName="draft-franke-isis-over-ipv6-01" ipr="trust200902">
   <front>
     <!-- The abbreviated title is used in the page header - it is only necessary if the 
          full title is longer than 39 characters -->
@@ -37,7 +38,7 @@
       </address>
     </author>
 
-    <date day="3" month="July" year="2015" />
+    <date day="19" month="October" year="2015" />
 
     <area>Routing</area>
 
@@ -120,33 +121,16 @@
           application since the goal of this extension is to become independent from specific link-layer properties.
         </t>
         <t>
-          While the IS-IS over IPv4 draft constructs the SNPA by padding the IPv4 address, we are
-          facing the issue that an IPv6 address will not fit into a standard sized SNPA.
-        </t>
-        <t>
-          There are multiple options to address this, so this is still TBD.
-        </t>
-        <t>
-          Option a) Treat the whole 16 byte of the IPv6 address as SNPA. Since the SNPA is only used internally
+          Therefore, treat the whole 16 byte of the IPv6 address as SNPA. Since the SNPA is only used internally
           to each router and not put into any IS-IS PDUs, no protocol datastructures need to be modified for this,
-          but implemenations need to deal with this new SNPA length internally.
-        </t>
-        <t>
-          Option b) Convert the 64-bit interface identifier of the IPv6 link-local
-          address of nodes back to an EUI48 format by using bytes 8 through 10 and bytes
-          13 through 15 of a nodes IPv6 address and flipping bit 0x02 in the first byte.
-        </t>
-        <t>
-          This is not an ideal solution since SNPA conflicts may arrise on link layers that
-          use other methods for generation of interface identifiers or for manually configured
-          addresses.
-        </t>
+          but implemenations need to deal with this new SNPA length internally.</t>
       </section>
       <section title="MTU">
-        <t>All transmitted IPv6 packets SHALL have a maximum size of 1280 bytes. This allows for
-           the protocol to run on any link supporting IPv6. Fragmentation SHALL not be used, therefore
-           the lsp-mtu may have to be adjusted for the LSPs to fit into 1280 byte packets.</t>
-        <t>Hello PDUs SHOULD be padded so that the total packet size is 1280 bytes.</t>
+        <t>Hello PDUs that are subject to padding SHALL be padded so that the total IPv6 packet size matches the MTU
+          of the link they are transmitted over. Fragmentation SHALL NOT be used on hellos, and a system receiving
+          an IPv6 encapsulated SHALL verify that the hello has not been subject to fragmentation.</t>
+        <t>Other transmitted PDUs MAY be fragmented to allow the transport of LSPs that result in larger packets than
+          the IPv6 MTU.</t>
       </section>
       <section title="Interoperability">
         <t>IS-IS implementations supporting IS-IS over IPv6 SHOULD provide a method that allows
@@ -182,8 +166,13 @@
       by a router that is on-link. For example, someone with malicious intent could send
       IS-IS over IPv6 packets to a global unicast address of a router via multiple hops.
     </t>
-    <t>For this reason, routers implementing IS-IS over IPv6 SHOULD verify that both source
-      and destination of received packets are link-local.</t>
+    <t>For this reason, routers implementing IS-IS over IPv6 need to verify that the origin
+      of each received IS-IS over IPv6 packet is indeed on-link.</t>
+    <t>To do this, routers implementing IS-IS over IPv6 SHALL implement generalized
+      TTL security as described in <xref target="RFC5082"/>. Since ttl security is mandatory
+      for IS-IS over IPv6, any packet received with a TTL differing from 255 can be classified
+      as &quot;Dangerous&quot; and SHALL be dropped.
+    </t>
     </section>
   </middle>
 
@@ -216,6 +205,7 @@
       </reference>
       <!--?rfc include="http://xml.resource.org/public/rfc/bibxml/reference.RFC.2119.xml"?-->
       &RFC2119;
+      &RFC5082;
       &RFC5308;
     </references>
     <references title="Informative References">

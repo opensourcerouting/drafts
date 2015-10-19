@@ -180,8 +180,10 @@
           receiving a unicast autodiscovery PDU also adds the neighbor to
           the candidate list.</t>
 
+          <!--
           <t>[Ed: XXX chopps: should we consider automatic application of mesh
           groups <xref target="RFC2973"/> as well?]</t>
+          -->
         </section>
       </section>
 
@@ -212,7 +214,8 @@
     </section>
 
     <section anchor="model" title="Configuration model">
-      <t>TODO: YANG model -- maybe we can just get them to include us :).</t>
+      <t>TODO: YANG model
+        <!-- maybe we can just get them to include us :). --></t>
     </section>
 
     <section anchor="Security" title="Security Considerations">
@@ -273,13 +276,15 @@
         <seriesInfo name="ISO/IEC" value="8473-1:1998"/>
       </reference>
 
-      <?rfc include="reference.RFC.2973"?>
+      <!-- rfc include="reference.RFC.2973" -->
       <?rfc include="reference.RFC.7176"?>
       <?rfc include="reference.RFC.7356"?>
     </references>
     <section anchor="Misconfig" title="Misconfiguration With P2P over LAN">
+      <t>TODO.</t>
+      <!--
       <t>As this specification utilizes the same initial P2P IIH PDU
-      as <!-- xref target="RFC" --> for discovering neighbors it is possible
+      as <!- - xref target="RFC" - -> for discovering neighbors it is possible
       that it could interact with an adjacent (XXX better word
       co-connected/participatin/...?) LAN interface that has been
       mis-configured for P2P over LAN operation. We examine the
@@ -345,6 +350,7 @@
         <t>The result is that a steady adjacency may be advertised by
         the neighbor</t>
       </section>
+      -->
     </section>
   </back>
 </rfc>

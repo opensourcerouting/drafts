@@ -8,7 +8,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-lamparter-isis-p2mp-01" ipr="trust200902">
+<rfc category="std" docName="draft-lamparter-isis-p2mp-02" ipr="trust200902">
   <front>
     <!-- The abbreviated title is used in the page header - it is only necessary if the 
          full title is longer than 39 characters -->
@@ -37,7 +37,7 @@
       <address>
         <postal>
           <street/>
-          <code>04103</code>
+          <code>04229</code>
           <city>Leipzig</city>
           <country>Germany</country>
         </postal>
@@ -51,7 +51,7 @@
       </address>
     </author>
 
-    <date day="19" month="October" year="2015" />
+    <date day="17" month="April" year="2016" />
 
     <area>Routing</area>
 
@@ -233,6 +233,7 @@
 
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
+          <t hangText="April 2016 [-02]:">(no changes/keepalive)</t>
           <t hangText="October 2015 [-01]:">Moved from new P2MP Hello PDU to
             using existing P2P PDU.</t>
           <t hangText="July 2015 [-00]:">Initial Version</t>

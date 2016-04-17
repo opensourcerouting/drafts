@@ -8,7 +8,7 @@
 <?rfc sortrefs="yes" ?>
 <?rfc compact="yes" ?>
 <?rfc subcompact="no" ?>
-<rfc category="std" docName="draft-lamparter-homenet-isis-profile-01" ipr="trust200902">
+<rfc category="std" docName="draft-lamparter-homenet-isis-profile-02" ipr="trust200902">
   <front>
     <title abbrev="Homenet IS-IS Profile"
                   >Homenet IS-IS Profile</title>
@@ -17,7 +17,7 @@
       <address>
         <postal>
           <street/>
-          <code>04103</code>
+          <code>04229</code>
           <city>Leipzig</city>
           <country>Germany</country>
         </postal>
@@ -25,7 +25,7 @@
       </address>
     </author>
 
-    <date day="19" month="October" year="2015" />
+    <date day="17" month="April" year="2016" />
 
     <area>Internet Engineering Task Force</area>
 
@@ -99,8 +99,6 @@
           <t><xref target="I-D.liu-isis-auto-conf"/>, IS-IS Autoconfiguration</t>
           <t><xref target="I-D.baker-ipv6-isis-dst-src-routing"/>, IS-IS IPv6 Source/Destination Routing</t>
           <t><xref target="I-D.lamparter-isis-p2mp"/>, IS-IS Point to Multipoint operation</t>
-          <t><xref target="I-D.franke-isis-over-ipv6"/>, IS-IS over IPv6 (Note:
-            controversial/under consideration/feedback needed)</t>
         </list>
       </t>
       <t>And, finally, IPv6 source/destination routing behavior as specified in
@@ -167,6 +165,17 @@
     <references title="Informative References">
       <?rfc include="reference.I-D.sarikaya-6man-sadr-overview"?>
     </references>
+
+    <section anchor="log" title="Change Log">
+      <t>(to be removed)</t>
+      <t><list style="hanging">
+          <t hangText="-00:">July 2015</t>
+
+          <t hangText="-01:">October 2015</t>
+
+          <t hangText="-02:">April 2016; removed isis-over-ipv6</t>
+        </list></t>
+    </section>
   </back>
 </rfc>
 <!-- vim: sw=2 ts=2 et

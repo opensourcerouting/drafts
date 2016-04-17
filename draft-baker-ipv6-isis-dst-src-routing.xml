@@ -38,7 +38,7 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-baker-ipv6-isis-dst-src-routing-04"
+<rfc category="std" docName="draft-baker-ipv6-isis-dst-src-routing-05"
      ipr="trust200902">
   <front>
     <title abbrev="IS-IS Source/Destination Routing">IPv6 Source/Destination
@@ -70,7 +70,7 @@
         <postal>
           <street/>
           <city>Leipzig</city>
-          <code>04103</code>
+          <code>04229</code>
           <region></region>
           <country>Germany</country>
         </postal>
@@ -78,7 +78,7 @@
       </address>
     </author>
 
-    <date day="19" month="October" year="2015" />
+    <date day="17" month="April" year="2016" />
 
     <area>Internet Engineering Task Force</area>
 

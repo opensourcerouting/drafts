@@ -87,6 +87,8 @@
 
     <?rfc needLines="5" ?>
 
+    <!-- TODO DL: glossary, maybe? -->
+
     <section anchor="pseudocirc" title="Point-To-Multipoint Pseudocircuits">
       <t>In place of <xref target="CLNS">ISO 8473 call management</xref>
         establishing sessions, this document establishes pairwise
@@ -111,6 +113,7 @@
         <t>Unnumbered media are not supported by this protocol.  Each
           participant on a link MUST have an unique SNPA address on that
           link.</t>
+        <!-- TODO DL: unnumbered IPv4? -->
 
         <section title="Representation in LSPs">
           <t>Pseudocircuits are represented in LSPs as a regular P2P circuit
@@ -184,6 +187,8 @@
           <t>[Ed: XXX chopps: should we consider automatic application of mesh
           groups <xref target="RFC2973"/> as well?]</t>
           -->
+
+          <!-- XXX DL: ARP / ND?  guess not, but might want to say that -->
         </section>
       </section>
 
@@ -213,6 +218,24 @@
       </section>
     </section>
 
+    <!--
+      section "packet processing"
+
+      DL: broken bridges rewriting the destination MAC will break P2MP
+      systems' capability to discern discovery IIHs and pseudocircuit IIHs;
+      the discovery will reset the link to down.  Might want to just ignore
+      "down" IIHs?  Need to describe behaviour on receiving that anyway.
+
+      receive IIH w/o 3way:     discard
+      receive IIH 3way Down:    discovery handling, MUST NOT process on pseudocircuit
+      receive IIH 3way Init/Up: check IDs, process on pseudocircuit
+
+      a P2MP circuit has only 1 extended local circuit ID, same for all pseudocircuits
+
+      all in all, might not really need to check the L2 destination address
+      on IIHs for proper operation (=> a SHOULD?).  doesn't really break
+      LSPs either.
+    -->
     <section anchor="model" title="Configuration model">
       <t>TODO: YANG model
         <!-- maybe we can just get them to include us :). --></t>
@@ -317,13 +340,24 @@
       P2MP router SHOULD use whatever means appropriate to alert the
       operator to the misconfiguration.</t>
 
+      [XXX DL: multicast autodiscovery can be put into passive mode or
+      disabled; peers might be discovered from other sources.]
+
       <section anchor="Mcast3Way" title="3-Way Enabled Unicast Ignored">
         <t>In the case where the neighbor has 3-way enabled and
         unicast packets are ignored the neighbor will enter 3-way INIT
         state with the first P2P discovery IIH it receives. It will
         ignore other routers P2P discovery IIH while in this state (ref
+           [XXX DL: really? can't find anything in 5303 on what neighbor IDs
+           to send if IIHs from multiple systems are seen.  nonetheless, end
+           result is the same.]
         p2poe). It will never progress to the UP state as it will
         never receive a P2P IIH (unicast) indicating it has been seen.</t>
+
+        <t>If the P2MP system sends no discovery packets (passive mode),
+        it will passively discover the P2P system and send unicast IIHs,
+        which will be ignored.  The P2P system will be in 3way down (no
+        neighbor seen) state instead of 3way-init.</t>
 
         <t>The result is that no adjacency will be seen on this link.</t>
       </section>
@@ -344,6 +378,21 @@
 
         <t>The result is that a flapping (and changing) adjacency may
         be advertised by the neighbor</t>
+
+        [DL: If P2MP discovery is passive, P2P system will stay in UP
+        and "lock on" to the first P2MP system it sees.  This can be used
+        as hitless migration from P2P to P2MP mode if the P2MP system
+        accepts multicast packets (=> full adjacency coming up).
+
+        If there's more than 2 P2P systems on the link, adjacencies will be
+        random by timing.]
+
+        [DL: If the link is a private vlan (RFC5517) or some other kind of
+        NBMA with a single broadcast-capable node, a P2MP system on that port
+        ("promisc" in 5517) will work with multiple P2P.  IMHO should be
+        mentioned in an appendix and declared explicitly out of scope
+        ("warranty void").  With all-P2MP systems this is in scope as NBMA
+        link with partial broadcast capability and should work as intended.]
       </section>
       <section anchor="twoWay" title="3-Way Disabled">
         <t>If a neighbor is not configured for 3-way operation,
@@ -358,6 +407,9 @@
 
         <t>The result is that a steady adjacency may be advertised by
         the neighbor</t>
+
+        [DL: P2MP passive: P2MP system receives IIH w/o 3way, discards;
+        since no IIHs are being sent, P2PoL system will stay down.]
       </section>
       -->
     </section>

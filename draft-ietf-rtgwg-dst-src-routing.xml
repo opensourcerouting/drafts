@@ -461,8 +461,7 @@ A < B :=    Adst <  Bdst
       </section>
     </section>
 
-    <section title="Requirements to the dynamic routing protocols
-		    providing source-destination routing information">
+    <section title="Routing protocol considerations">
       <t>As with the destination-only routing, source-destination
         routes will typically be disseminated throughout the network
         by dynamic routing protocols. It is expected that multiple
@@ -793,7 +792,7 @@ recursive resolution result:
 
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
-          <t hangText="November 2015 [-01]:"><list>
+          <t hangText="November 2015 [-02]:"><list>
             <t>added section on source-destination routing use cases</t>
             <t>added section on alternative lookup algorithm</t>
             <t>added section on requirement for dynamic routing

@@ -307,6 +307,35 @@ A < B :=    Adst <  Bdst
         <t>Hence, this document describes destination-first match search.</t>
       </section>
 
+      <section title="Backtracking caveats" anchor="backtrack">
+        <t>The backtracking behavior (specified above as "A router MUST
+          continue to a less specific destination prefix") has been shown
+          to potentially cause a significant loss of forwarding
+          performance since forwarding a single packet may require a
+          large number of table lookups.</t>
+        <t>To avoid this, implementations can install synthetic routes to
+          achieve the same lookup result.  This works as follows, to be
+          evaluated for each unique destination prefix:</t>
+        <t><list style="numbers">
+            <t>If there is a route (D, S=::/0), end processing for D.</t>
+
+            <t>Iterate upwards one level (from D if first iteration, previous
+              D' otherwise) to a less specific destination.  Call this D'.</t>
+
+            <t>For all routes (D', S'), i.e. all source prefixes S' under that
+              destiation prefix, install a copy (D, S') if and only if S'
+              covers some source prefix that isn't covered yet.  (In terms of
+              set theory, S' cut by all existing S under D is not empty.)
+            </t>
+
+            <t>Repeat at step 1.</t>
+        </list></t>
+        <t>The effect of this algorithm is that after performing a lookup on
+          the destination prefix, looking up the source prefix directly yields
+          the result that backtracking would give.  This eliminates
+          backtracking and provides constant 2 lookup cost.</t>
+      </section>
+
       <section title="Multi-FIB lookup" anchor="altlookup">
         <t>Routing table lookup algorithm described in <xref
           target="deflookup"/> is iterative and looks for destination

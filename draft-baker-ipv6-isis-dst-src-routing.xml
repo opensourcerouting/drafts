@@ -38,29 +38,23 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-baker-ipv6-isis-dst-src-routing-05"
+<rfc category="std" docName="draft-baker-ipv6-isis-dst-src-routing-06"
      ipr="trust200902">
   <front>
     <title abbrev="IS-IS Source/Destination Routing">IPv6 Source/Destination
     Routing using IS-IS</title>
 
     <author fullname="Fred Baker" initials="F.J." surname="Baker">
-      <organization>Cisco Systems</organization>
-
+      <organization/>
       <address>
         <postal>
           <street/>
-
           <city>Santa Barbara</city>
-
           <code>93117</code>
-
           <region>California</region>
-
           <country>USA</country>
         </postal>
-
-        <email>fred@cisco.com</email>
+        <email>FredBaker.IETF@gmail.com</email>
       </address>
     </author>
 
@@ -78,7 +72,7 @@
       </address>
     </author>
 
-    <date day="17" month="April" year="2016" />
+    <date day="18" month="October" year="2016" />
 
     <area>Internet Engineering Task Force</area>
 
@@ -289,7 +283,7 @@ IPv6 management    5       TBD-MT5
              title="Protocol encoding for IPv6 Source Prefix information">
       <t>Destination/Source reachabilities are originated using TLV 237, using
         an additional sub-TLV to carry the source prefix as follows.</t>
-               
+
       <t>As noted in <xref target="routing"/>, any IPv6 Reachability TLV that
         does not specify a source prefix is functionally identical to
         specifying ::/0 as the source prefix.  Such routes SHOULD NOT be

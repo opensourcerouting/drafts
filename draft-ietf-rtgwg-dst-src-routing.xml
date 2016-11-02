@@ -38,7 +38,7 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-ietf-rtgwg-dst-src-routing-00"
+<rfc category="std" docName="draft-ietf-rtgwg-dst-src-routing-03"
      ipr="trust200902">
   <front>
     <title abbrev="Destination/Source Routing">
@@ -72,7 +72,7 @@
       </address>
     </author>
 
-    <date year="2015"/>
+    <date/>
     <area>Routing</area>
     <workgroup>rtgwg</workgroup>
 
@@ -752,6 +752,58 @@ recursive resolution result:
         SOHO network
         </artwork>
       </figure>
+
+      <section title="Interoperability in Distance-Vector Protocols" anchor="distvector">
+        <t>Distance-Vector routing protocols (BGP, RIPng, BABEL), operating on
+          a hop-by-hop basis, can address interoperability and migration
+          concerns on that level.  With routing information being flooded in
+          the reverse direction of traffic being forwarded using that
+          information, a hop that floods is the same hop that forwards.</t>
+        <t>This makes dealing with destination/source-unaware routers easy
+          if destination/source routes are made to be ignored by such unaware
+          routers, and flooding of such routes is inhibited.</t>
+        <t>If D/S routes are discarded by non-D/S routers, D/S routers will
+          not receive non-working routes and can select from other available
+          working D/S routes.</t>
+        <t>Note that for this to work, non-D/S routers MUST NOT flood D/S
+          routing information.  This can be achieved in 2 ways:
+          <list style="numbers">
+            <t>Using some preexisting encoding to signal non-D/S routers to not
+              flood these particular routes</t>
+            <t>Ignoring flooded D/S information on D/S routers by having them
+              detect that they received it from a non-D/S router (e.g. using
+              some capability signalling to identify non-D/S routers.)  This
+              handling likely needs to be performed on a level of same-link
+              neighborships.</t>
+          </list>
+        </t>
+        <t>Also note that the considerations in this section only apply if data
+          path and flooding path are congruent.</t>
+      </section>
+      <section title="Interoperability in Link-State Protocols" anchor="linkstate">
+        <t>For Link-State routing protocols (OSPF, IS-IS), there is no relation
+          between route flooding and forwarding.  Instead, forwarding decisions
+          are based on shortest-path calculation on top of the received
+          topology information.</t>
+        <t>For a D/S router to avoid loops, there are again two choices
+          available:
+          <list style="numbers">
+            <t>Detect that forwarding for a D/S route transits over a non-D/S
+              router and convert the route into a blackhole route to replace
+              looping with blackholing.  This obviously impacts
+              connectivity.</t>
+            <t>Perform separate SPF calculations using only the subset of
+              D/S-capable routers; thus D/S routers can forward D/S-routed
+              packets as long as they stay in contiguous islands.</t>
+          </list>
+        </t>
+        <t>The latter approach is facilitated by Multi-Topology extensions to
+          the respective protocols.  These extensions provide a way to both
+          isolate D/S routing information and perform the separate SPF
+          calculation.  Note that it is not neccessary to use multiple
+          topologies for distinct source prefixes;  only a single additional
+          topology encompassing all D/S-capable routers is sufficient.</t>
+      </section>
     </section>
 
     <section anchor="IANA" title="IANA Considerations">
@@ -792,6 +844,10 @@ recursive resolution result:
 
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
+          <t hangText="November 2016 [-03]:"><list>
+              <t>added DV/LS protocol considerations</t>
+              <t>note backtracking workaround/caveat</t>
+            </list></t>
           <t hangText="November 2015 [-02]:"><list>
             <t>added section on source-destination routing use cases</t>
             <t>added section on alternative lookup algorithm</t>

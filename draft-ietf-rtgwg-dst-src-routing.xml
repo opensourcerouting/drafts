@@ -147,6 +147,7 @@
           important resources (for example, video or cloud services)
           local to ISPs.</t>
 
+        <?rfc needLines="16"?>
         <figure title="Example of multihomed small network">
           <artwork align="center">
                          _____                ,,-------.
@@ -191,7 +192,7 @@
 	assigned to the packet by originating host.</t>
 
       <t>For a general introduction and aspects of interfacing routers to
-        hosts, refer to <xref target="I-D.sarikaya-6man-sadr-overview"/>.</t>
+        hosts, refer to <xref target="RFC8043"/>.</t>
       </section>
 
       <section title="Degree of traffic engineering">
@@ -579,6 +580,7 @@ recursive resolution result:
         target="homenet"/> which demonstrates this design
         approach:</t>
 
+      <?rfc needLines="19"?>
         <figure title="Example of multihomed small network with
 		       partial deployment of source-destination
 		       routing">
@@ -685,10 +687,17 @@ recursive resolution result:
 
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t>The base underlying this document was first outlaid by Ole Troan and
-        Lorenzo Colitti in <xref target="I-D.troan-homenet-sadr"/> for application in the
-        homenet area.</t>
-      <t>This document is largely the result of discussions with Fred Baker and
-        derives from <xref target="I-D.baker-ipv6-isis-dst-src-routing"/>.</t>
+        Lorenzo Colitti in <xref target="I-D.troan-homenet-sadr"/> for
+        application in the homenet area.  Significant contributions to
+        source-specific routing as a whole came from Juliusz Chroboczek and
+        Matthieu Boutier.</t>
+      <t>This document itself is largely the result of discussions with Fred
+        Baker and derives from <xref
+          target="I-D.baker-ipv6-isis-dst-src-routing"/>.</t>
+      <t>Thanks to Chris Bowers, Acee Lindem and Tony Przygienda for their
+        input and review.</t>
+      <t>The Linux kernel is providing an implementation of the behaviour
+        described here since even before the document was started.</t>
     </section>
 
     <section anchor="log" title="Change Log">
@@ -727,7 +736,7 @@ recursive resolution result:
       <?rfc include="reference.RFC.4271"?>
       <?rfc include="reference.RFC.5308"?>
       <?rfc include="reference.RFC.5340"?>
-      <?rfc include="reference.I-D.sarikaya-6man-sadr-overview"?>
+      <?rfc include="reference.RFC.8043"?>
       <?rfc include="reference.I-D.troan-homenet-sadr"?>
       <?rfc include="reference.I-D.baker-ipv6-isis-dst-src-routing"?>
       <reference anchor="hal-00947234v1" target="https://hal-univ-diderot.archives-ouvertes.fr/hal-00947234v1">

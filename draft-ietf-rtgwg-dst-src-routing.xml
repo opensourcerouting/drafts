@@ -38,7 +38,7 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-ietf-rtgwg-dst-src-routing-03"
+<rfc category="std" docName="draft-ietf-rtgwg-dst-src-routing-04"
      ipr="trust200902">
   <front>
     <title abbrev="Destination/Source Routing">
@@ -844,6 +844,7 @@ recursive resolution result:
 
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
+          <t hangText="May 2017 [-04]:">no changes</t>
           <t hangText="November 2016 [-03]:"><list>
               <t>added DV/LS protocol considerations</t>
               <t>note backtracking workaround/caveat</t>

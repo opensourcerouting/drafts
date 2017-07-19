@@ -281,8 +281,10 @@ A < B :=    Adst <  Bdst
 	<t>Implementations MAY implement lookup algorithm differently
           from step-by-step description given above but if they do so
 	  then outcome of the algorithm MUST be exactly the same as if
-	  above steps were used. One example of equivalent lookup
-	  algorithm is given in <xref target="altlookup"/>.</t>
+          above steps were used.  A variation providing improved performance,
+          as well as a variation matching existing implementations with
+          reversed order are described in <xref target="nobacktrack"/>
+          and <xref target="altlookup"/>, respectively.</t>
       </section>
 
       <section title="Ordering Rationale">
@@ -305,159 +307,6 @@ A < B :=    Adst <  Bdst
           is not the intention of this document.</t>
 
         <t>Hence, this document describes destination-first match search.</t>
-      </section>
-
-      <section title="Backtracking caveats" anchor="backtrack">
-        <t>The backtracking behavior (specified above as "A router MUST
-          continue to a less specific destination prefix") has been shown
-          to potentially cause a significant loss of forwarding
-          performance since forwarding a single packet may require a
-          large number of table lookups.</t>
-        <t>To avoid this, implementations can install synthetic routes to
-          achieve the same lookup result.  This works as follows, to be
-          evaluated for each unique destination prefix:</t>
-        <t><list style="numbers">
-            <t>If there is a route (D, S=::/0), end processing for D.</t>
-
-            <t>Iterate upwards one level (from D if first iteration, previous
-              D' otherwise) to a less specific destination.  Call this D'.</t>
-
-            <t>For all routes (D', S'), i.e. all source prefixes S' under that
-              destiation prefix, install a copy (D, S') if and only if S'
-              covers some source prefix that isn't covered yet.  (In terms of
-              set theory, S' cut by all existing S under D is not empty.)
-            </t>
-
-            <t>Repeat at step 1.</t>
-        </list></t>
-        <t>The effect of this algorithm is that after performing a lookup on
-          the destination prefix, looking up the source prefix directly yields
-          the result that backtracking would give.  This eliminates
-          backtracking and provides constant 2 lookup cost.</t>
-      </section>
-
-      <section title="Multi-FIB lookup" anchor="altlookup">
-        <t>Routing table lookup algorithm described in <xref
-          target="deflookup"/> is iterative and looks for destination
-          match first. This section outlines alternative
-          implementation of the lookup algorithm which produces the
-          same outcome but does match on the source address
-          first. Algorithm in this section is given for illustration
-          purposes only.</t>
-
-        <t>Lookup algorithm described in this section is not iterative
-          at the expense of maintaining multiple lookup tables. Such
-          tradeoff may be desirable for implementation on routers
-          where packet forwarding is assisted by specialized ASICs.</t>
-
-        <t>The crux of the algorithm is in creating multiple
-          destination-only tables for forwarding lookups (FIB tables)
-          with each table being associated with unique range of source
-          addresses.</t>
-
-        <t>After source-destination routing information has been
-          collected, one FIB table is created for each source range
-          including the default range ::/0. Source-destination routes
-          then replicated into each destination-only FIB table whose
-          associated source address range is a subset of route's
-          source range. Note that this rule means routes with default
-          source range ::/0 are replicated into each FIB
-	  table.</t>
-
-        <t>In case when multiple routes with the same destination
-          prefix are replicated into the same FIB table only route
-          with the most specific source address range is
-          installed.</t>
-
-        <t>For example, if source-destination routing table contains
-          these routes:</t>
-
-	<texttable style="headers">
-	  <ttcol>Destination prefix</ttcol>
-	  <ttcol>Source range</ttcol>
-	  <ttcol>Next Hop</ttcol>
-
-	  <c>::/0,</c>
-	  <c>::/0,</c>
-	  <c>NH1</c>
-
-	  <c>2001:101:1234::/48,</c>
-	  <c>2001:db8:3456:8000::/56,</c>
-	  <c>NH2</c>
-
-	  <c>2001:101:5678::/48,</c>
-	  <c>2001:db8:3456:8000::/56,</c>
-	  <c>NH3</c>
-
-	  <c></c>
-	  <c>::/0,</c>
-	  <c>NH4</c>
-
-	  <c>2001:101:abcd::/48,</c>
-	  <c>2001:db8:3456::/48,</c>
-	  <c>NH5</c>
-	</texttable>
-
-        <t>then 3 FIB tables will be created associated with source
-          ranges ::/0, 2001:db8:3456::/48 and
-          2001:db8:3456:8000::/56. In this example range
-          2001:db8:3456:8000::/56 is a subset of less specific range
-          2001:db8:3456::/48. Such inclusion makes a somewhat
-          artificial example but was intentionally selected to
-          demonstrate hierarchy of route replication.</t>
-
-        <t>And content of these FIB tables will be:</t>
-
-        <t>FIB 1 (source range ::/0):</t>
-	<texttable style="headers">
-	  <ttcol>Destination prefix</ttcol>
-	  <ttcol>Next Hop</ttcol>
-
-	  <c>::/0,</c>
-	  <c>NH1</c>
-
-	  <c>2001:101:5678::/48,</c>
-	  <c>NH4</c>
-	</texttable>
-
-        <t>FIB 2 (source range 2001:db8:3456::/48):</t>
-	<texttable style="headers">
-	  <ttcol>Destination prefix</ttcol>
-	  <ttcol>Next Hop</ttcol>
-
-	  <c>::/0,</c>
-	  <c>NH1</c>
-
-	  <c>2001:101:5678::/48,</c>
-	  <c>NH4</c>
-
-	  <c>2001:101:abcd::/48,</c>
-	  <c>NH5</c>
-	</texttable>
-
-        <t>FIB 3 (source range 2001:db8:3456:8000::/56):</t>
-	<texttable style="headers">
-	  <ttcol>Destination prefix</ttcol>
-	  <ttcol>Next Hop</ttcol>
-
-	  <c>::/0,</c>
-	  <c>NH1</c>
-
-	  <c>2001:101:1234::/48,</c>
-	  <c>NH2</c>
-
-	  <c>2001:101:5678::/48,</c>
-	  <c>NH3</c>
-
-	  <c>2001:101:abcd::/48,</c>
-	  <c>NH5</c>
-	</texttable>
-
-        <t>During packet forwarding, lookup first matches source
-          address against the list of address ranges associated with
-          FIB tables to select a FIB table with the most specific
-          source address range and then does destination-only lookup
-          in the selected FIB table.</t>
       </section>
     </section>
 
@@ -881,6 +730,175 @@ recursive resolution result:
       <?rfc include="reference.I-D.sarikaya-6man-sadr-overview"?>
       <?rfc include="reference.I-D.troan-homenet-sadr"?>
       <?rfc include="reference.I-D.baker-ipv6-isis-dst-src-routing"?>
+      <reference anchor="hal-00947234v1" target="https://hal-univ-diderot.archives-ouvertes.fr/hal-00947234v1">
+        <front>
+          <title>Source-sensitive routing</title>
+          <author fullname="Matthieu Boutier" initials="M." surname="Boutier"/>
+          <author fullname="Juliusz Chroboczek" initials="J." surname="Chroboczek"/>
+          <date year="2014"/>
+        </front>
+        <seriesInfo name="hal" value="00947234v1" />
+      </reference>
     </references>
+
+    <section title="Implementation Options">
+      <section title="Pre-expanded 2-step lookup without backtracking"
+          anchor="nobacktrack">
+        <t>The backtracking behavior (specified in <xref target="deflookup"/>
+          as "A router MUST continue to a less specific destination prefix")
+          has been shown to potentially cause a significant loss of forwarding
+          performance since forwarding a single packet may require a large
+          number of table lookups.  (The degenerate case is 129 destination
+          lookups in decreasing prefix length, each followed by a failing
+          longest-match on the source prefix.)</t>
+        <t>To avoid this, implementations can install synthetic routes to
+          achieve the same lookup result.  This works as follows, to be
+          evaluated for each unique destination prefix:</t>
+        <?rfc needLines="13"?>
+        <t><list style="numbers">
+            <t>If there is a route (D, S=::/0), end processing for D.</t>
+
+            <t>Iterate upwards one level (from D if first iteration, previous
+              D' otherwise) to a less specific destination.  Call this D'.</t>
+
+            <t>For all routes (D', S'), i.e. all source prefixes S' under that
+              destiation prefix, install a copy (D, S') if and only if S'
+              covers some source prefix that isn't covered yet.  (In terms of
+              set theory, S' cut by all existing S under D is not empty.)
+            </t>
+
+            <t>Repeat at step 1.</t>
+        </list></t>
+        <t>The effect of this algorithm is that after performing a lookup on
+          the destination prefix, looking up the source prefix directly yields
+          the result that backtracking would give.  This eliminates
+          backtracking and provides constant 2 lookup cost (after exactly one
+          destination longest-match, the source longest-match will provide the
+          final, correct result;  any no-match is a final no-match).</t>
+      </section>
+
+      <section title="Translation to Multi-FIB (Policy Routing) perspective"
+          anchor="altlookup">
+        <t>The lookup procedure described in this document requires
+          destination-first lookup.  This is not a fit with most existing
+          implementations of Policy Routing.  While Policy Routing has no
+          formal specification, it generally permits choosing from multiple
+          routing tables / FIBs based on, among other things, source address.
+          Some implementations support using more than one FIB for a single
+          lookup, but not all do.</t>
+        <t>An implementation that can choose from multiple FIBs based on
+          source address is capable of correct forwarding according to this
+          document, provided that it supports enough FIBs.  One FIB will be
+          used for each unique source prefix.</t>
+        <t>For a complete description of the required translation algorithm,
+          please refer to <xref target="hal-00947234v1"/>.  It roughly works
+          as follows:
+        </t>
+
+        <t>After source-destination routing information has been
+          collected, one FIB table is created for each source range
+          including the default range ::/0. Source-destination routes
+          then replicated into each destination-only FIB table whose
+          associated source address range is a subset of route's
+          source range. Note that this rule means routes with default
+          source range ::/0 are replicated into each FIB
+	  table.</t>
+
+        <t>In case when multiple routes with the same destination
+          prefix are replicated into the same FIB table only route
+          with the most specific source address range is
+          installed.</t>
+
+        <t>For example, if source-destination routing table contains
+          these routes:</t>
+
+	<texttable style="headers">
+	  <ttcol>Destination prefix</ttcol>
+	  <ttcol>Source range</ttcol>
+	  <ttcol>Next Hop</ttcol>
+
+	  <c>::/0,</c>
+	  <c>::/0,</c>
+	  <c>NH1</c>
+
+	  <c>2001:101:1234::/48,</c>
+	  <c>2001:db8:3456:8000::/56,</c>
+	  <c>NH2</c>
+
+	  <c>2001:101:5678::/48,</c>
+	  <c>2001:db8:3456:8000::/56,</c>
+	  <c>NH3</c>
+
+	  <c></c>
+	  <c>::/0,</c>
+	  <c>NH4</c>
+
+	  <c>2001:101:abcd::/48,</c>
+	  <c>2001:db8:3456::/48,</c>
+	  <c>NH5</c>
+	</texttable>
+
+        <t>then 3 FIB tables will be created associated with source
+          ranges ::/0, 2001:db8:3456::/48 and
+          2001:db8:3456:8000::/56. In this example range
+          2001:db8:3456:8000::/56 is a subset of less specific range
+          2001:db8:3456::/48. Such inclusion makes a somewhat
+          artificial example but was intentionally selected to
+          demonstrate hierarchy of route replication.</t>
+
+        <t>And content of these FIB tables will be:</t>
+
+        <t>FIB 1 (source range ::/0):</t>
+	<texttable style="headers">
+	  <ttcol>Destination prefix</ttcol>
+	  <ttcol>Next Hop</ttcol>
+
+	  <c>::/0,</c>
+	  <c>NH1</c>
+
+	  <c>2001:101:5678::/48,</c>
+	  <c>NH4</c>
+	</texttable>
+
+        <t>FIB 2 (source range 2001:db8:3456::/48):</t>
+	<texttable style="headers">
+	  <ttcol>Destination prefix</ttcol>
+	  <ttcol>Next Hop</ttcol>
+
+	  <c>::/0,</c>
+	  <c>NH1</c>
+
+	  <c>2001:101:5678::/48,</c>
+	  <c>NH4</c>
+
+	  <c>2001:101:abcd::/48,</c>
+	  <c>NH5</c>
+	</texttable>
+
+        <t>FIB 3 (source range 2001:db8:3456:8000::/56):</t>
+	<texttable style="headers">
+	  <ttcol>Destination prefix</ttcol>
+	  <ttcol>Next Hop</ttcol>
+
+	  <c>::/0,</c>
+	  <c>NH1</c>
+
+	  <c>2001:101:1234::/48,</c>
+	  <c>NH2</c>
+
+	  <c>2001:101:5678::/48,</c>
+	  <c>NH3</c>
+
+	  <c>2001:101:abcd::/48,</c>
+	  <c>NH5</c>
+	</texttable>
+
+        <t>During packet forwarding, lookup first matches source
+          address against the list of address ranges associated with
+          FIB tables to select a FIB table with the most specific
+          source address range and then does destination-only lookup
+          in the selected FIB table.</t>
+      </section>
+    </section>
   </back>
 </rfc>

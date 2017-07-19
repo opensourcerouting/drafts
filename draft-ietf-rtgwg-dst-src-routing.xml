@@ -566,6 +566,32 @@ recursive resolution result:
           source part of a dst-src route.  Therefore, dst-src routes MUST be
           ignored for Multicast RPF lookups.</t>
       </section>
+      <section title="Testing for Connectivity Availability">
+        <t>There are situations where systems' behaviour depends on the fact
+          whether "connectivity" is available in a broad sense.  These systems
+          may have previously tested for the existence of a default route
+          in the routing table.</t>
+        <t>Since the default route may now be qualified with a source prefix,
+          this test can fail.  If no additional information is available to
+          qualify this test, systems SHOULD test for the existence of any
+          default route instead, e.g. include routes with default destination
+          but non-default source prefix.</t>
+        <t>However, if the test can be associated with a source address or
+          source prefix, this data SHOULD be used in looking up a default
+          route.  Depending on the application, it MAY also be useful to -
+          possibly additionally - consider "connectivity" to be available if
+          any route exists where the route's source prefix covers the prefix
+          or address under consideration, allowing arbitrary destination
+          prefixes.</t>
+        <t>Note though that this approach to routing SHOULD NOT be used to
+          infer a list of source prefixes in an enumerative manner, or even to
+          guess domain information.  Specifically, if an operator uses more
+          specific source prefixes to refine their routing, the inferred
+          information will provide bogus extraneous output.  This is distinct
+          from the connectivity tests mentioned above in that those actually
+          inquire the routing system, unlike domain information or enumeration,
+          which is higher-layer application information.</t>
+      </section>
     </section>
 
     <section title="Interoperability" anchor="interop">

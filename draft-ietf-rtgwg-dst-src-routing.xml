@@ -235,6 +235,31 @@
           injecting relevant source-destination routes into the
           dynamic routing protocol.</t>
       </section>
+
+      <section title="Walled-garden Enterprise services">
+        <t>Apart from transfering from multihomed personal networks to
+          multihomed PA enterprise setups without any changes,
+          source-destination routing can also be used to correctly
+          route services that assign their own prefixes to customers using
+          the particular service.  This is distinct from internet
+          connectivity only in that it does not provide a default route.
+          Applying source-destination routing, the entire routing domain
+          is aware of the specific constraints of the routes involved.</t>
+        <t>Additionally, if the walled-garden's destination prefix is
+          advertised as blackhole route, this ensures that communication
+          with the service will only be routed using the specific D/S route,
+          never leaking onto unintended paths like a default route.</t>
+        <t>This is very similar to firewall/filtering functionality, except
+          the feature is distributed onto routers.</t>
+      </section>
+
+      <section title="Information Source for Neighbor Management">
+        <t>Having information on source address restrictions for routes
+          distributed, routers can rely on this additional information to
+          improve their behaviour towards hosts connected to them.  This
+          specifically includes IPv6 Router Advertisements, which is described
+          in <xref target="I-D.linkova-v6ops-conditional-ras"/>.</t>
+      </section>
     </section>
 
     <section title="Principle of operation">
@@ -739,6 +764,7 @@ recursive resolution result:
       <?rfc include="reference.RFC.8043"?>
       <?rfc include="reference.I-D.troan-homenet-sadr"?>
       <?rfc include="reference.I-D.baker-ipv6-isis-dst-src-routing"?>
+      <?rfc include="reference.I-D.linkova-v6ops-conditional-ras"?>
       <reference anchor="hal-00947234v1" target="https://hal-univ-diderot.archives-ouvertes.fr/hal-00947234v1">
         <front>
           <title>Source-sensitive routing</title>

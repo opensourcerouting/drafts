@@ -257,7 +257,8 @@
           distributed, routers can rely on this additional information to
           improve their behaviour towards hosts connected to them.  This
           specifically includes IPv6 Router Advertisements, which is described
-          in <xref target="I-D.linkova-v6ops-conditional-ras"/>.</t>
+          in <xref target="RFC8028"/> and <xref
+            target="I-D.linkova-v6ops-conditional-ras"/>.</t>
       </section>
     </section>
 
@@ -783,6 +784,7 @@ recursive resolution result:
       <?rfc include="reference.RFC.4271"?>
       <?rfc include="reference.RFC.5308"?>
       <?rfc include="reference.RFC.5340"?>
+      <?rfc include="reference.RFC.8028"?>
       <?rfc include="reference.RFC.8043"?>
       <?rfc include="reference.I-D.troan-homenet-sadr"?>
       <?rfc include="reference.I-D.baker-ipv6-isis-dst-src-routing"?>

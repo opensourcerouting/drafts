@@ -78,10 +78,15 @@
 
     <abstract>
       <t>This note specifies using packets' source addresses in route lookups
-        as additional qualifier to be used in route lookup.  This applies to
-        <xref target="RFC2460">IPv6</xref> in general with specific
-        considerations for routing protocol left for separate documents.
+        as additional qualifier to be used in hop-by-hop routing decisions.
+        This applies to <xref target="RFC2460">IPv6</xref> in general with
+        specific considerations for routing protocol left for separate
+        documents.  There is nothing precluding similar operation in IPv4, but
+        this is not in scope of this document.
       </t>
+      <t>Note that destination/source routing, source/destination routing,
+        SADR, source-specific routing, source-sensitive routing, S/D routing
+        and D/S routing are all used synonymously.</t>
     </abstract>
   </front>
 
@@ -89,22 +94,21 @@
     <section title="Introduction">
       <t>Both <xref target="RFC0791">IPv4</xref> and
         <xref target="RFC2460">IPv6</xref> architectures specify that
-        determination of the outgoing interface and next-hop gateway
-        for packet forwarding is based solely on the destination
-        address contained in the packet header. There exists class of
-        network design problems which require packet forwarding to
-        consider more than just the destination IP address (see <xref
-        target="usecases"/> for examples). At present these problems
-        are routinely resolved by configuring on routers special
-        forwarding based on a local policy. The policy enforces packet
-        forwarding decision outcome based not only on the destination
-        address but also on other fields in the packet's IP header,
-        most notably the source address. Such policy-based routing is
-        conceptually similar to static routes in that it is highly
-        static in nature and must be closely governed via the
-        management plane (most frequently - via managing configuration
-        by an operator). Thus policy-based routing configuration and
-        maintenance is costly and error-prone.</t>
+        determination of the outgoing next-hop for packet forwarding is based
+        solely on the destination address contained in the packet header. There
+        exists class of network design problems which require packet forwarding
+        to consider more than just the destination IP address (see <xref
+          target="usecases"/> for examples).</t>
+      <t>
+        At present these problems are routinely resolved by configuring special
+        forwarding based on a local policy on routers. The policy enforces
+        packet forwarding decision outcome based not only on the destination
+        address but also on other fields in the packet's IP header, most
+        notably the source address. Such policy-based routing is conceptually
+        similar to static routes in that it is highly static in nature and must
+        be closely governed via the management plane (most frequently - via
+        managing configuration by an operator). Thus policy-based routing
+        configuration and maintenance is costly and error-prone.</t>
 
       <t>Rapid expansion of IPv6 to networks were static configuration
         is not acceptable due to both its static nature and necessity
@@ -112,23 +116,19 @@
         in the paradigm of forwarding IP packets based only on their
         destination address.</t>
 
-      <t>This document describes architecture of source-destination
-        routing. This includes description of making a packet
-        forwarding decision and requirements to dynamic routing
-        protocols which will disseminate source-destination routing
-        information. Specific considerations for particular dynamic
-        routing protocols are outside of the scope of this note and
-        will be covered in separate documents.</t>
+      <t>This document describes architecture of destination-source
+        routing. It includes both forwarding plane and control plane
+        considerations and requirements.  Specific considerations for
+        particular dynamic routing protocols are outside of the scope of
+        this note and will be covered in separate documents, for example
+        handling of a noncontiguous sub-topology in a link-state protocol.</t>
 
       <t>General concepts covered by this document are equally
-        applicable to both IPv4 and IPv6. Considering limited backward
-        compatibility of the source-destination routing with the
-        traditional destination-only routing, it appears likely that
-        at this stage of IPv4 deployment change of routing paradigm in
-        existing networks is not feasible (see <xref
-        target="interop"/> for discussion of backwards
-        compatibility). So examples in this document will be given
-        using IPv6 addresses.</t>
+        applicable to both IPv4 and IPv6. Considering the implementation
+        complexity of backward compatibility of destination-source routing
+        with traditional destination-only routing, IPv4 is left outside the
+        scope of this document.</t>
+      <!-- todo: revisit -->
 
       <section title="Requirements Language">
         <t>The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
@@ -139,13 +139,17 @@
     </section>
 
     <section title="Use cases" anchor="usecases">
-      <section title="Dual-connected home / SOHO network" anchor="homenet">
-        <t>Small networks - such as SOHO or the home networks
-          (homenet) - may be multihomed (i.e. dual-connected) to two
-          different Internet Service Providers (ISPs). Benefits of
-          doing this may include resiliency or faster access to
-          important resources (for example, video or cloud services)
+      <section title="Multihomed networks with provider assigned prefixes"
+          anchor="multihome">
+        <t>There are good reasons for networks to be multihomed - benefits of
+          doing this may include redundandy, better performance or faster
+          access to important resources (for example, video or cloud services)
           local to ISPs.</t>
+        <t>However, in a range from smaller home networks to
+          even larger enterprises, it is likely that each service provider
+          will assign some address space (from their PA allocation) to the
+          network.</t>
+
 
         <?rfc needLines="16"?>
         <figure title="Example of multihomed small network">
@@ -166,30 +170,25 @@
         </artwork>
       </figure>
 
-      <t>Each ISP will allocate to the network IP address (or small
-        range of IP addresses) to use as source address for Internet
-        communications.</t>
+      <t>In this situation, providers are expected to perform ingress
+        filtering according to <xref target="RFC2827">BCP 38</xref>.
+        Ths means only packets with a source address from the prefix that
+        the provider assigned will be accepted.  In addition, the assigned
+        prefix can usually not be expected to remain the same.</t>
 
-      <t>Since connectivity providers generally secure their ingress along
-        the lines of <xref target="RFC2827">BCP 38</xref>,
-        small multihomed networks have a need to ensure their traffic
-        leaves their network with a correct combination of source address and
-        exit taken.  This applies to networks of a particular pattern where
-        the provider's default (dynamic) address provisioning methods are used
-        and no fixed IP space is allocated, e.g. home networks, small business
-        users and mobile ad-hoc setups.</t>
+      <t>Conventionally, NAT or policy routing would be used to produce
+        correct behaviour.  These are not desirable solutions:   NAT66
+        breaks end-to-end connectivity (and may restrict concurrent use of
+        parallel paths.)  Policy routing requires a sufficiently skilled
+        operator to manually manage these policies.</t>
 
-      <t>While IPv4 networks would conventionally use NAT or policy routing to
-        produce correct behaviour, this not desirable to carry over to IPv6.
-        Instead, assigning addresses from multiple prefixes in parallel shifts
-        the choice of uplink to the host.  However, now for finding the proper
-        exit the source address of packets must be taken into account.</t>
-
-      <t>Source-destination routing, when enabled on routers in the
-        multihomed small network (including routers R1 and R2), solves
-        the problem by driving packets originated by internal hosts to
-        the correct Internet exit point considering IP source address
-	assigned to the packet by originating host.</t>
+      <t>By assigning addresses from multiple prefixes each to end host
+        (as a policy routing solution could do), the choice of uplink is
+        left to host, including the option to choose multiple at once.
+        Destination-source routing provides the neccessary behaviour for
+        routers (e.g. R1 and R2 in above example) to forward packets to
+        the appropriate exit.  It does so without requiring the manual
+        configuration maintenance that policy routing would entail.</t>
 
       <t>For a general introduction and aspects of interfacing routers to
         hosts, refer to <xref target="RFC8043"/>.</t>
@@ -224,26 +223,26 @@
           firewall open to DDOS attack from outside.</t>
 
         <t>If routers in the untrusted zone are configured with
-          source-destination routing (and, possibly, unicast RPF
+          destination-source routing (and, possibly, unicast RPF
           check) and receive via dynamic routing protocol routes
           &lt;destination: secure zone; source: trusted host in the
           untrusted zone&gt; then DDOS attack is dropped by routers on
-          the edge of source-destination routing area. DDOS attack
+          the edge of destination-source routing area. DDOS attack
           does not even reach the firewall whose resources are freed
           to deal with Deep Packet Inspection. On the other hand,
           security policy is managed in a single point - on a router
-          injecting relevant source-destination routes into the
+          injecting relevant destination-source routes into the
           dynamic routing protocol.</t>
       </section>
 
       <section title="Walled-garden Enterprise services">
         <t>Apart from transfering from multihomed personal networks to
           multihomed PA enterprise setups without any changes,
-          source-destination routing can also be used to correctly
+          destination-source routing can also be used to correctly
           route services that assign their own prefixes to customers using
           the particular service.  This is distinct from internet
           connectivity only in that it does not provide a default route.
-          Applying source-destination routing, the entire routing domain
+          Applying destination-source routing, the entire routing domain
           is aware of the specific constraints of the routes involved.</t>
         <t>Additionally, if the walled-garden's destination prefix is
           advertised as blackhole route, this ensures that communication
@@ -278,12 +277,10 @@
 
       <section title="Lookup ordering and disambiguation" anchor="deflookup">
         <t>When a router is making packet forwarding decision, that
-          is consulting its routing table in order to determine
-          outgoing interface and next-hop to forward the packet to, it
-          will use information from packet's header to look up best
-          matching route from the routing table. This section
-          describes lookup into the source-destination routing
-          table.</t>
+          is consulting its routing table in order to determine next-hop to
+          forward the packet to, it will use information from packet's header
+          to look up best matching route from the routing table. This section
+          describes lookup into the destination-source routing table.</t>
 
         <t>For longest-match lookups, the source prefix is matched after the
           destination prefix.  This is to say, first the longest matching
@@ -337,14 +334,14 @@ A < B :=    Adst <  Bdst
     </section>
 
     <section title="Routing protocol considerations">
-      <t>As with the destination-only routing, source-destination
+      <t>As with the destination-only routing, destination-source
         routes will typically be disseminated throughout the network
         by dynamic routing protocols. It is expected that multiple
         dynamic routing protocols will be adapted to the needs of
-        source-destination routing architecture. Specification of
+        destination-source routing architecture. Specification of
         dynamic routing protocols is outside of scope of this
         document. This section lists requirements and considerations
-        for the dynamic source-destination routing protocols.</t>
+        for the dynamic destination-source routing protocols.</t>
 
       <section title="Source information">
         <t>Dynamic routing protocols will need to be able to propagate
@@ -358,8 +355,8 @@ A < B :=    Adst <  Bdst
         <t>Dynamic routing protocols MUST be able to propagate
           multiple routes whose destination prefix is the same but
           associated source ranges are different. Such unique pairs of
-          source and destination MUST be treated as different
-          source-destination routes.</t>
+          destination and source MUST be treated as different
+          destination-source routes.</t>
 
         <t>There is no limitation on how source range information is
           propagated and associated with destination
@@ -372,22 +369,22 @@ A < B :=    Adst <  Bdst
 
       <section title="Loop-freeness considerations" anchor="loopfree">
         <t>It is expected that some existing dynamic routing protocols
-          will be enhanced to propagate source-destination routing
+          will be enhanced to propagate destination-source routing
           information. In this case the protocol may be configured to
           operate in a network where some, but not all, routers
-          support source-destination routing and others are still
+          support destination-source routing and others are still
           using destination-only routing. Even if all routers within a
-          network are capable of source-destination routing, it is
+          network are capable of destination-source routing, it is
           very likely that on edges of the network they will have to
           forward packets to routers doing destination-only
           routing.</t>
 
-        <t>Since a router implementing source-destination routing can
+        <t>Since a router implementing destination-source routing can
           have additional, more granular routes than one that doesn't
           implement it, persistent loops can form between these
           systems.</t>
 
-        <t>Thus specifications of source-destination routing protocols
+        <t>Thus specifications of destination-source routing protocols
           (either newly defined protocols or enhancements to already
           existing one) MUST take provisions to guarantee loop-free
           operations.</t>
@@ -395,28 +392,28 @@ A < B :=    Adst <  Bdst
         <t>There are 3 possible approaches to avoid looping condition:</t>
 
         <t><list style="numbers">
-            <t>Guarantee that next-hop gateway of a source-destination
-              route supports source-destination routing, for example
+            <t>Guarantee that next-hop gateway of a destination-source
+              route supports destination-source routing, for example
               calculate an alternate topology including only routers
-              that support source-destination routing architecture</t>
+              that support destination-source routing architecture</t>
 
-            <t>If next-hop gateway is not aware of source-destination
-              routing then a source-destination path can lead to it
+            <t>If next-hop gateway is not aware of destination-source
+              routing then a destination-source path can lead to it
               only if next-hop router is 'closer' to the destination
               in terms of protocol's routing metric; important
               particular case of the rule is if destination-only
               routing is pointing to the same next-hop gateway</t>
 
-            <t>Discard the packet (i.e. treat source-destination route
+            <t>Discard the packet (i.e. treat destination-source route
               as unreachable)</t>
         </list></t>
 
         <t>In many practical cases routing information on the edges of
-          source-destination routing domain will be provided by an
+          destination-source routing domain will be provided by an
           operator via configuration. Dynamic routing protocol will
           only disseminate this trusted external routing information.
           For example, returning to the use case of multihomed Home
-          network (<xref target="homenet"/>), both routers R1 and R2
+          network (<xref target="multihome"/>), both routers R1 and R2
           will have default static routes pointing to ISPs.</t>
 
         <t>Above considerations require a knowledge of the next-hop
@@ -424,17 +421,17 @@ A < B :=    Adst <  Bdst
           hop-by-hop flooding (<xref target="RFC2080">RIP</xref>,
           <xref target="RFC4271">BGP</xref>), knowing the peer's
           capabilities is sufficient. Information about if peer supports
-          source-destination routing can either be negotiated
+          destination-source routing can either be negotiated
           explicitly or simply be deduced from the fact that systems
-          would propagate source-destination routing information only
+          would propagate destination-source routing information only
           if they understand it. Protocols building a link-state
           database (<xref target="RFC5340">OSPFv3</xref>, <xref
           target="RFC5308">IS-IS</xref>) have the additional
           opportunity to calculate alternate paths based on knowledge
           of the entire domain but cannot assume that routers
-          understand source-destination routing information only
+          understand destination-source routing information only
           because they participated in its flooding. Such protocols
-          MUST explicitly advertise support for the source-destination
+          MUST explicitly advertise support for the destination-source
           routing.</t>
       </section>
 
@@ -447,36 +444,35 @@ A < B :=    Adst <  Bdst
 
         <t>Dynamic routing protocol supporting recursive routes
           MUST specify how this recursive routing information is
-          interpreted in the context of source-destination routing as
-          part of standardizing source-destination routing extensions
+          interpreted in the context of destination-source routing as
+          part of standardizing destination-source routing extensions
           for the protocol. <xref target="recurs"/> lists several
           possible strategies protocols can choose from.</t>
       </section>
     </section>
 
     <section title="Applicability To Specific Situations">
-      <t>This section discusses how source-destination routing is used
+      <t>This section discusses how destination-source routing is used
         together with some common networking techniques dependent on
         routes in the routing table.</t>
 
       <section title="Recursive Route Lookups" anchor="recurs">
         <t>Recursive routes provide indirect path information where
-          instead of supplying outgoing interface and next-hop gateway
-          directly they specify that next-hop information must be
-          taken from another route in the same routing table. It is
-          said that one route 'recurses' via another route which is
-          'resolving' recursion. Recursive routes may either be
-          carried by dynamic routing protocols or provided via
-          configuration as recursive static routes.</t>
+          instead of supplying the next-hop directly they specify that next-hop
+          information must be taken from another route in the same routing
+          table. It is said that one route 'recurses' via another route which
+          is 'resolving' recursion. Recursive routes may either be carried by
+          dynamic routing protocols or provided via configuration as recursive
+          static routes.</t>
 
-        <t>Recursive source-destination routes have additional
+        <t>Recursive destination-source routes have additional
           complication in how source address range should be
-          considered while finding source-destination route to resolve
+          considered while finding destination-source route to resolve
           recusion.</t>
 
         <t>There are several possible approaches:</t>
         <t><list style="numbers">
-          <t>Ignore source-destination routes, resolve recursion only
+          <t>Ignore destination-source routes, resolve recursion only
             via destination-only routes (i.e. routes with source range
             ::/0)</t>
 
@@ -509,8 +505,8 @@ A < B :=    Adst <  Bdst
           default method of recursive static route resolution. This is
           both to guarantee that destination-only recursive static
           routes do not change their behavior when router's software
-          is upgraded to support source-destination routing and at the
-          same time make source-destination recursive routes
+          is upgraded to support destination-source routing and at the
+          same time make destination-source recursive routes
           useful.</t>
 
         <section title="Recursive route expansion" anchor="multiroute">
@@ -609,31 +605,31 @@ recursive resolution result:
       <t>When routing information is coming from outside of the
         routing protocol (for example, being provided by operator in
         the form of static routes or network protocols not aware of
-        source-destination routing paradigm) it may not be possible
+        destination-source routing paradigm) it may not be possible
         for the router to ascertain loop-free properties of such
         routing information. In these cases consistent (and loop-free)
         packet forwarding is woven into network topology and must be
         taken into consideration at design time.</t>
 
       <t>It is possible to design network with mixed deployment of
-        routers supporting and not supporting source-destination
-        routing. Thus gradual enablement of source-destination routing
+        routers supporting and not supporting destination-source
+        routing. Thus gradual enablement of destination-source routing
         in existing networks is also possible but has to be carefully
         planned and evaluated for each network design
         individually.</t>
 
-      <t>Generally, source-destination routing will not cause traffic
-        loops when disjoint 'islands' of source-destination routing do
-        not exchange source-destination routing information. One
+      <t>Generally, destination-source routing will not cause traffic
+        loops when disjoint 'islands' of destination-source routing do
+        not exchange destination-source routing information. One
         particular case of this rule is a network which contains
         single contiguous 'island' of routers aware of
-        source-destination routing. Example SOHO network from <xref
-        target="homenet"/> which demonstrates this design
+        destination-source routing. Example SOHO network from <xref
+        target="multihome"/> which demonstrates this design
         approach:</t>
 
       <?rfc needLines="19"?>
         <figure title="Example of multihomed small network with
-		       partial deployment of source-destination
+		       partial deployment of destination-source
 		       routing">
           <artwork align="center">
                  ______             ___             ,,------.
@@ -719,11 +715,11 @@ recursive resolution result:
         on the impossibility of hijacking such a route.</t>
 
       <!-- from draft-baker-ipv6-dst-src-routing -->
-      <t>While source/destination routing could be used as part of a security
+      <t>While destination-source routing could be used as part of a security
         solution, it is not really intended for the purpose. The approach
         limits routing, in the sense that it routes traffic to an appropriate
         egress, or gives a way to prevent communication between systems not
-        included in a source/destination route, and in that sense could be
+        included in a destination-source route, and in that sense could be
         considered similar to an access list that is managed by and scales with
         routing.</t>
     </section>
@@ -759,10 +755,10 @@ recursive resolution result:
               <t>note backtracking workaround/caveat</t>
             </list></t>
           <t hangText="November 2015 [-02]:"><list>
-            <t>added section on source-destination routing use cases</t>
+            <t>added section on destination-source routing use cases</t>
             <t>added section on alternative lookup algorithm</t>
             <t>added section on requirement for dynamic routing
-              protocols dessiminating source-destination informaton</t>
+              protocols dessiminating destination-source informaton</t>
             </list></t>
           <t hangText="October 2015 [-00]:">
             renamed to draft-ietf-rtgwg-dst-src-routing-00, no content changes
@@ -856,7 +852,7 @@ recursive resolution result:
           as follows:
         </t>
 
-        <t>After source-destination routing information has been
+        <t>After destination-source routing information has been
           collected, one FIB table is created for each source range
           including the default range ::/0. Source-destination routes
           then replicated into each destination-only FIB table whose
@@ -870,7 +866,7 @@ recursive resolution result:
           with the most specific source address range is
           installed.</t>
 
-        <t>For example, if source-destination routing table contains
+        <t>For example, if destination-source routing table contains
           these routes:</t>
 
 	<texttable style="headers">

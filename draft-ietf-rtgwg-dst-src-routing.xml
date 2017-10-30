@@ -38,7 +38,7 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-ietf-rtgwg-dst-src-routing-05"
+<rfc category="std" docName="draft-ietf-rtgwg-dst-src-routing-06"
      ipr="trust200902">
   <front>
     <title abbrev="Destination/Source Routing">
@@ -749,7 +749,8 @@ recursive resolution result:
         Lorenzo Colitti in <xref target="I-D.troan-homenet-sadr"/> for
         application in the homenet area.  Significant contributions to
         source-specific routing as a whole came from Juliusz Chroboczek and
-        Matthieu Boutier.</t>
+        Matthieu Boutier.  Matthieu has also provided a huge amount of review
+        and editing input on this document.</t>
       <t>This document itself is largely the result of discussions with Fred
         Baker and derives from <xref
           target="I-D.baker-ipv6-isis-dst-src-routing"/>.</t>
@@ -761,6 +762,15 @@ recursive resolution result:
 
     <section anchor="log" title="Change Log">
       <t><list style="hanging">
+          <t hangText="October 2017 [-06]:"><list>
+              <t>clarify described operation is not an implementation guide</t>
+              <t>editorial cleanups</t>
+            </list></t>
+          <t hangText="July 2017 [-05]:"><list>
+              <t>clarify connectivity tests</t>
+              <t>extend use cases</t>
+              <t>editorial cleanups</t>
+            </list></t>
           <t hangText="May 2017 [-04]:">no changes</t>
           <t hangText="November 2016 [-03]:"><list>
               <t>added DV/LS protocol considerations</t>

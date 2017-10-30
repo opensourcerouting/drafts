@@ -263,6 +263,24 @@
     </section>
 
     <section title="Principle of operation">
+      <section title="Frame of reference">
+        <t>The principles described here are define on a functional level what
+          the semantics of routing information exchanged between systems is.
+          It is neither a prescription in how to efficiently implement these
+          semantics, nor does it preclude an implementation from providing
+          other administrator-friendly views of the same routing
+          information.</t>
+
+        <t>More specifically, forwarding plane implementations are expected to
+          internally diverge from the lookup algorithm described below.  The
+          router as a whole MUST ultimately behave as if the steps below were
+          followed.  An internal variation providing improved performance,
+          as well as a variation matching existing implementations with
+          reversed order are described in <xref target="nobacktrack"/>
+          and <xref target="altlookup"/>, respectively.</t>
+      </section>
+
+      <section title="Route information and equality">
       <t>The mechanism in this document is such that a source prefix is added
         to all route entries.  This document assumes all entries have a source
         prefix, with ::/0 as default value for entries installed without a
@@ -275,6 +293,7 @@
         taken into account for comparisons.  Two routes with identical
         information except the source prefix MAY exist and MUST be installed
         and matched.</t>
+      </section>
 
       <section title="Lookup ordering and disambiguation" anchor="deflookup">
         <t>When a router is making packet forwarding decision, that
@@ -301,14 +320,6 @@ A < B :=    Adst <  Bdst
 ]]>
 </artwork>
         </figure>
-
-	<t>Implementations MAY implement lookup algorithm differently
-          from step-by-step description given above but if they do so
-	  then outcome of the algorithm MUST be exactly the same as if
-          above steps were used.  A variation providing improved performance,
-          as well as a variation matching existing implementations with
-          reversed order are described in <xref target="nobacktrack"/>
-          and <xref target="altlookup"/>, respectively.</t>
       </section>
 
       <section title="Ordering Rationale">

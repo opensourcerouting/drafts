@@ -38,7 +38,7 @@
 <?rfc subcompact="no" ?>
 <!-- end of list of popular I-D processing instructions -->
 <!-- end of list of processing instructions -->
-<rfc category="std" docName="draft-ietf-rtgwg-dst-src-routing-07"
+<rfc category="std" docName="draft-llsyang-rtgwg-dst-src-routing-00"
      ipr="trust200902">
   <front>
     <title abbrev="Destination/Source Routing">
@@ -71,11 +71,35 @@
         <email>as@cisco.com</email>
       </address>
     </author>
-
+    <author fullname="Jen Linkova" initials="J." surname="Linkova">
+      <organization>Google</organization>
+      <address>
+        <postal>
+          <street>1 Darling Island Rd</street>
+          <city>Pyrmont NSW</city>
+          <region/>
+          <code>2009</code>
+          <country>Australia</country>
+        </postal>
+        <email>furry@google.com</email>
+      </address>
+    </author>  
+  <author fullname="Shu Yang" initials="S." surname="Yang">
+      <organization>Shenzhen University</organization>
+      <address>
+        <postal>
+          <street></street>
+          <city></city>
+          <region/>
+          <code></code>
+          <country>China</country>
+        </postal>
+        <email>yang.shu@szu.edu.cn</email>
+      </address>
+    </author>  
     <date/>
     <area>Routing</area>
     <workgroup>rtgwg</workgroup>
-
     <abstract>
       <t>This note specifies using packets' source addresses in route lookups
         as additional qualifier to be used in hop-by-hop routing decisions.

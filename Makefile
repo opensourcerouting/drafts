@@ -4,6 +4,7 @@ DRAFTS+=draft-ietf-rtgwg-dst-src-routing.xml
 DRAFTS+=draft-franke-isis-over-ipv6.xml
 DRAFTS+=draft-lamparter-isis-p2mp.xml
 DRAFTS+=draft-lamparter-homenet-isis-profile.xml
+DRAFTS+=draft-lamparter-bier-manet-multicast-links.xml
 
 
 .PHONY: love clean

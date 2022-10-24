@@ -1,0 +1,216 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE rfc [
+  <!ENTITY nbsp    "&#160;">
+  <!ENTITY zwsp   "&#8203;">
+  <!ENTITY nbhy   "&#8209;">
+  <!ENTITY wj     "&#8288;">
+]>
+<?rfc strict="yes" ?>
+<?rfc toc="yes"?>
+<?rfc tocdepth="4"?>
+<?rfc symrefs="yes"?>
+<?rfc sortrefs="yes" ?>
+<?rfc compact="yes" ?>
+<?rfc subcompact="no" ?>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="std"
+  docName="draft-lamparter-bier-manet-multicast-links-00" ipr="trust200902"
+  submissionType="IETF" consensus="true" tocInclude="true" tocDepth="4"
+  symRefs="true" sortRefs="true" version="3">
+  <front>
+    <title
+      abbrev="BIER link-layer multicast"
+      >Use, problems and gap analysis for BIER link-layer multicast</title>
+    <seriesInfo
+      name="Internet-Draft"
+      value="draft-lamparter-bier-manet-multicast-links"/>
+    <author fullname="David 'equinox' Lamparter" initials="D." surname="Lamparter">
+      <organization>in personal capacity (NetDEF, Inc.)</organization>
+      <address>
+        <postal>
+          <street/>
+          <code/>
+          <city>Leipzig</city>
+          <region/>
+          <country>DE</country>
+        </postal>
+        <email>equinox@diac24.net</email>
+      </address>
+    </author>
+    <date day="24" month="October" year="2022"/>
+    <area>Routing</area>
+
+    <workgroup>BIER Working Group</workgroup>
+    <keyword>BIER MANET ROLL Mesh Multicast Link-layer</keyword>
+
+    <abstract>
+      <t>
+        Mesh networks present a particularly difficult base to provide
+        a multicast service on top of.  Not only do normal assumptions of
+        transitive and reflexive connectivity not hold, but proper use of
+        multicast capabilities on lower radio layers can be imperative.
+      </t>
+      <t>
+        This document provides use case, problem statement and gap analysis
+        for utilizing link-layer multicast features in a BIER domain.
+      </t>
+    </abstract>
+  </front>
+
+  <middle>
+    <section anchor="intro">
+      <name>Introduction and use case</name>
+      <t>
+        While the vast majority of internet core networks runs on pointopoint
+        links where link-layer unicast and multicast are essentially identical,
+        radio links present a different environment both in efficiency of
+        medium utilization as well as power use by both transmitters and
+        receivers.  Any two receivers reachable by the same transmitter could
+        theoretically also be reached by a single transmission addressed to
+        both of them.  At the same time, reachability may be transient on
+        short and long time scales, and is frequently non-transitive or even
+        unidirectional.
+      </t>
+      <t>
+        The specific characteristics of a radio link ultimately depend on what
+        the link layer technology exposes to the upper layer.  This results in
+        huge differences ranging from poorly optimized, costly multicast (e.g.
+        802.11) to equal cost for unicast or multicast transmission of the same
+        packet (e.g. some satellite networks).  Radio links may also have
+        widely divergent numbers of reachable receivers per transmitter.  If
+        multicast is to be implemented in these conditions, explicit
+        per-neighbor replication of multicast traffic as described in normal
+        BIER operation can become prohibitively expensive.
+      </t>
+      <t>
+        As BIER provides a very efficient multicast forwarding system, and may
+        already be in use on non-radio parts of a network, extending BIER for
+        use on radio links is desirable.  In particular, even on radio-carried
+        parts of the network, it may be useful to have both unicast and
+        multicast transport options to dynamically switch based on targeted
+        neighbor/receiver counts.
+      </t>
+      <t>
+        Lastly, the applicable scenarios here can be divided into two broad
+        categories:  radio links providing (or emulating) a broadcast domain
+        with transitive reachability, and radio links omitting this function
+        (general mesh network or NBMA case).  The former is a subset of the
+        latter, any solution for mesh/NBMA networks would also work for
+        broadcast radio links, but some aspects could be simplified away.
+      </t>
+    </section>
+    <section anchor="problems">
+      <name>Problem statement</name>
+      <t>
+        To attempt an efficient solution for the above scenarios, the problem
+        to consider starts out as an abstract quest to reduce radio link use
+        caused by BIER utilizing explicit unicast replication to a number of
+        neighbors (BFR-NBRs) on egress. There are (at least) two angles this
+        can be viewed from:
+      </t>
+      <ul empty="true" spacing="normal">
+        <li>attempt to reduce the number of BFR-NBRs (BIER neighbors)</li>
+        <li>attempt to forward data traffic to multiple BFR-NBRs at the
+            same time</li>
+      </ul>
+      <section anchor="neigh-reduce">
+        <name>Reducing BFR-NBR count</name>
+        <t>
+          While sounding odd from a superficial glance, reducing the number
+          of neighbors as seen from BIER protocol operation may be a viable
+          and very simple approach.  In particular for broadcast radio links,
+          the entire link could be fused into one BFR-NBR if all members
+          of the link can agree on disjoint bit subsets of forwarding
+          responsibility.  Traffic is then sent out as plain broadcast onto
+          the radio link with each receiver masking the bit string to their
+          subset before further processing (possibly discarding the packet
+          entirely if the mask becomes zero.)
+        </t>
+        <t>
+          TBD: this really doesn't work on non-transitive (i.e. mesh) networks.
+          Explain why.
+        </t>
+      </section>
+      <section anchor="multi-neigh">
+        <name>Transmitting to multiple BFR-NBRs</name>
+        <t>
+          The more generic angle is to add some capability for BIER to replace
+          multiple transmissions to distinct BFR-NBRs with one transmission
+          that can reach the same set of BFR-NBRs.  Note that not only is this
+          a per-packet consideration, but also not all BFR-NBRs resulting from
+          the BIER forwarding procedure need be reached with the same
+          transmission.  In fact, so long as the respective bit strings are
+          disjoint and sum up to the intended set, any number of unicast and
+          multicast transmissions might be combined to implement the forwarding
+          action for a given packet.
+        </t>
+        <t>
+          Since the decision on which BFR-NBRs shall be used to forward a given
+          packet is fundamentally made by the sender in BIER (as opposed to
+          RPF and receiver-join based approaches), the primary difficulty at
+          this point becomes for the receiver to distinguish whether it was
+          actually an intended recipient of a link-layer multicast packet.
+          The link-layer unicast destination address would normally perform
+          this distinction, and is now gone.  Further, since all recipients
+          would now receive the same bitstring to operate on, the recipient
+          needs to know which bits, if any, it was the intended recipient for.
+        </t>
+        <t>
+          A secondary difficulty also exists in meeting the requirement for
+          multiple recipients on the same radio link to accept the same
+          encoding for BIER packets.  This is more of an encapsulation detail,
+          but generally the receiver is the entity allocating a set of labels
+          which map to SD/BSL/SI.  Only if recipients can agree to accept
+          the same encapsulation, multicast delivery becomes possible at all.
+          This problem has been approached with upstream-allocated labels in
+          other context (mLDP), but this is not necessarily the only possible
+          approach.
+        </t>
+      </section>
+    </section>
+    <section anchor="gap">
+      <name>Gap analysis</name>
+      <t>TBD.  Some factors to consider here:</t>
+      <ul empty="true" spacing="normal">
+        <li>likely only a subset of BIER transports is relevant/useful to
+          specify for MANET operation.  For gap analysis, word out some
+          considerations in making those choices later.</li>
+        <li>MANET routers are generally software forwarders, considerations?</li>
+        <li>The whole upstream allocated labels thing.  But it's not really
+          upstream allocation that's needed, just agreement between downstream
+          receivers.  Could be met by just removing configuration variables,
+          e.g. with BIER in IPv6 choose a "global common ground"?</li>
+        <li>Is a handshake mechanism needed to go in/out of "radio mode"?</li>
+        <li>If there are switchovers between "plain" and "radio" BIER, will
+          that cause some data packet loss/duplication?</li>
+        <li>ROLL isn't considered yet at all.</li>
+      </ul>
+    </section>
+    <section anchor="Acknowledgements">
+      <name>Acknowledgements</name>
+      <t>This document is rooted in discussions with Tony Przygienda and
+        Ronald in 't Velt.</t>
+    </section>
+    <section anchor="log">
+      <name>Change Log</name>
+      <dl newline="false" spacing="normal">
+        <dt>October 2022 [-00]:</dt>
+        <dd>Initial text after IETF 114
+            discussions</dd>
+      </dl>
+    </section>
+  </middle>
+
+  <back>
+    <references>
+      <name>References</name>
+      <references>
+        <name>TBD: Normative References</name>
+      </references>
+      <references>
+        <name>TBD: Informative References</name>
+      </references>
+    </references>
+  </back>
+</rfc>
+<!-- vim: sw=2 ts=2 et
+-->
